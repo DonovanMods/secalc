@@ -10,6 +10,12 @@ This project adheres to [Semantic Versioning](https://semver.org).
 - Makefile wrapping common development tasks (`make help` lists them);
   `make check` runs the formatting/vet/test gate.
 
+### Changed
+
+- Running `se2calc` with no arguments now prints the full help (with a
+  grammar summary and examples) and exits 0, instead of the bare
+  "requires at least 1 arg(s)" error.
+
 ## [0.1.0] - 2026-08-19
 
 ### Added

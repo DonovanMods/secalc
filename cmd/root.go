@@ -17,12 +17,27 @@ const Version = "0.1.0"
 // so tests never share flag state.
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
-		Use:          "se2calc [flags] <expression>...",
-		Short:        "Space Engineers 2 thruster and mass calculator",
-		Version:      Version,
-		Args:         cobra.MinimumNArgs(1),
+		Use:   "se2calc [flags] <expression>...",
+		Short: "Space Engineers 2 thruster and mass calculator",
+		Long: `se2calc reports how many thrusters of each type lift a Space Engineers 2
+ship, and what they consume, from a mass expression.
+
+An expression is terms joined by "+": mass literals (1.23t, 1,230kg,
+bare kg) and storage shortcuts from the config (2*s15m, s25m), matched
+case-insensitively. Run "se2calc init" to write the default config for
+editing.`,
+		Example: `  se2calc -g 0.5 1.23t + 2*s15m + s25m
+  se2calc --full 1t + 2*s15m`,
+		Version: Version,
+		// ArbitraryArgs, not unset: with a subcommand present, cobra's
+		// default arg validator would reject "se2calc 1t" as an unknown
+		// command.
+		Args:         cobra.ArbitraryArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return cmd.Help()
+			}
 			flags := cmd.Flags()
 			configPath, _ := flags.GetString("config")
 			cfg, err := config.Load(configPath)
