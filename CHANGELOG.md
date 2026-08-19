@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Added
+
+- Makefile wrapping common development tasks (`make help` lists them);
+  `make check` runs the formatting/vet/test gate.
+
 ## [0.1.0] - 2026-08-19
 
 ### Added

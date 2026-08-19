@@ -58,3 +58,9 @@ Notes on SE2's model: inventories are **mass-limited** (capacity is kg,
 there is no volume/density), hydrogen consumption is in the game's
 unitless hydrogen units per second, and 1 g is treated as 9.81 m/s²
 (community-verified).
+
+## Development
+
+Common tasks are wrapped in the Makefile — `make` (or `make help`)
+lists them. Run `make check` (formatting, vet, tests) before
+committing; `make install` builds and installs the binary.
