@@ -2,6 +2,15 @@
 
 **Date:** 2026-08-19
 **Status:** Approved design, pre-implementation
+**Amended:** 2026-08-19, after SE2 data research (VS2.3, July 2026, from
+spaceengineers2.wiki.gg bot-extracted block pages). Three findings forced
+changes from the originally approved draft: (1) SE2 inventories are
+**mass-limited (kg)** — there is no volume/density model, so `--full` is
+`mass + capacity` and the `cargo_density` setting is dropped; (2) SE2 block
+sizes are footprint-named (1 m, 2 m, …), not small/medium/large; (3) ion
+thrusters exist in SE2 (zero thrust in atmosphere) — their stats ship
+commented out in the default config. Hydrogen consumption is tracked in
+SE2's unitless "units/s", not L/s.
 
 ## Purpose
 
@@ -20,9 +29,9 @@ what power (or fuel) those thrusters consume.
 | Thruster output semantics | Alternatives per size — each family×size row is an independent, complete solution |
 | Thrust margin | Target TWR, configurable, default **1.5** (`-m/--margin` overrides config) |
 | Thruster self-mass | Accounted for, closed-form solution |
-| Full-container mass | `capacity (L) × cargo_density (kg/L)`, density configurable |
-| Power output | Per-family `power_unit` (MW for electric, L/s H2 for hydrogen) |
-| Game data | **SE2 early-access values only — never SE1.** Researched from current wiki/community sources during implementation; sources cited as comments in `default.toml` |
+| Full-container mass | `mass + capacity (kg)` — SE2 inventories are mass-limited; no density model exists |
+| Power output | Per-family `power_unit` (MW for electric, "units/s H2" for hydrogen) |
+| Game data | **SE2 early-access values only — never SE1.** VS2.3 (July 2026) values from spaceengineers2.wiki.gg bot-extracted block pages; sources cited as comments in `default.toml` |
 
 ## CLI Surface
 
@@ -30,7 +39,7 @@ what power (or fuel) those thrusters consume.
 se2calc [flags] <expression...>
 
   -g, --gravity float   gravity multiplier relative to Earth (1 g), default 1.0
-  -f, --full            use loaded container masses (capacity × cargo density)
+  -f, --full            use loaded container masses (empty mass + capacity kg)
   -m, --margin float    target thrust-to-weight ratio, overrides config
       --config path     alternate config file
       --version
@@ -66,39 +75,43 @@ shortcut   := config-defined container key, matched case-insensitively
 (if present) → `--config` file (if given). Merge is per-key: an override file
 may contain only the values that differ.
 
-**Structure** (values illustrative until SE2 research lands):
+**Structure** (real VS2.3 values land in `default.toml` during implementation):
 
 ```toml
 [settings]
 margin = 1.5          # default target thrust-to-weight ratio
-cargo_density = 2.7   # kg/L, used by --full
 
-# Storage containers: the table key IS the CLI shortcut (case-insensitive).
-[containers.S1]
-name = "Small Cargo Container"
-mass = 150            # kg, empty
-capacity = 1000       # L
+# Storage containers: the table key IS the CLI shortcut (case-insensitive;
+# keys are written lowercase — Viper lowercases all keys anyway).
+[containers.s1]
+name = "Cargo Container 1.5 m"
+mass = 245.17         # kg, empty
+capacity = 16800      # kg of cargo when full (SE2 inventories are mass-limited)
 
-# Thruster families are open-ended: adding [thrusters.ion] later is a pure
-# config change. Sizes within a family are open-ended too.
+# Thruster families are open-ended: adding or uncommenting [thrusters.ion]
+# is a pure config change. Sizes within a family are open-ended too, keyed
+# by footprint (SE2 has no small/medium/large split).
 [thrusters.atmospheric]
 name = "Atmospheric"
 power_unit = "MW"     # unit for this family's consumption values
 
-[thrusters.atmospheric.small]
-name = "Small Atmospheric Thruster"
-thrust = 96           # kN
-mass = 700            # kg
-power = 0.6           # in power_unit, per thruster
+[thrusters.atmospheric.sizes.s1]  # size keys are arbitrary dot-free ids
+name = "1 m"                      # display name
+thrust = 40000                    # N (verbatim from wiki sources)
+mass = 57.98                      # kg
+power = 0.075                     # in power_unit, per thruster
 ```
 
 Fixed unit conventions, documented as comments in the generated default
-config: mass kg, capacity L, thrust kN, gravity in multiples of 9.81 m/s².
+config: mass kg, capacity kg, thrust N, gravity in multiples of 9.81 m/s².
+Ion thruster stats are included in `default.toml` as commented-out TOML with
+a note (they produce zero thrust in atmosphere); users hauling in vacuum can
+uncomment them in their override file.
 
 ## Calculation Model
 
 1. **Total ship mass** `M` = sum of expression terms. Container terms use
-   `mass` (empty) or `mass + capacity × cargo_density` (`--full`).
+   `mass` (empty) or `mass + capacity` (`--full`; capacity is already kg).
 
 2. **Required thruster count** per family×size, accounting for the thrusters'
    own mass, with `g_eff = 9.81 × gravity_multiplier`:
@@ -125,33 +138,38 @@ curves (e.g. atmospheric falloff) are a possible future config+calc addition.
 ```
 SE2 Calculator
 ──────────────────────────────────────────
-Gravity: 0.5 g          Target TWR: 1.5
+Gravity: 0.5 g   Target TWR: 1.5
 
 Mass breakdown:
-  base                      1.23 t
-  2 × Small Cargo (full)    2.30 t
-  1 × Medium Cargo (full)   4.65 t
+  1.23t                              1.23 t
+  2 x Cargo Container 1.5 m (full)  34.09 t
+  Cargo Container 2.5 m (full)      67.87 t
 ──────────────────────────────────────────
-Total ship mass:            8.18 t (full)
+Total ship mass: 103.19 t (full)
 
 Thrusters needed to overcome gravity
 (each line is a complete, independent solution):
 
-  Atmospheric                    power
-    Small      12               7.2 MW
-    Medium      4               6.4 MW
-    Large       1               4.5 MW
+  Atmospheric
+    1 m      20   1.5 MW
+    2 m       3   1.95 MW
+    5 m       1   2.4 MW
+    10 m      1   16 MW
 
-  Hydrogen                       fuel
-    Small       9              14.1 L/s H2
-    Medium      3              11.2 L/s H2
-    Large       1               8.7 L/s H2
+  Hydrogen
+    0.5 m    13   9.75 units/s H2
+    2 m       3   12 units/s H2
+    2.5 m     1   12 units/s H2
+    7.5 m     1   120 units/s H2
 ```
 
-- Mass breakdown echoes every parsed term with its resolved mass; `(full)`
-  markers appear only with `--full`.
-- Masses print in `t` at ≥ 1 t, otherwise `kg`.
-- Not-viable rows: `Small — not viable (cannot lift own weight at 1.5 g)`.
+- Mass breakdown echoes every parsed term (mass literals echo the token as
+  typed) with its resolved mass; `(full)` markers appear only with `--full`.
+- Masses print in `t` at ≥ 1 t (2 decimals), otherwise whole `kg`.
+- Power/fuel is printed per row with its family unit — no column header
+  needed.
+- Not-viable rows:
+  `1 m  not viable (cannot lift own weight at this gravity/margin)`.
 - `-g 0` replaces the thruster section with
   `Zero gravity — no thrust needed to hover.`
 - Plain aligned text; no color or table dependencies.
@@ -206,7 +224,8 @@ TDD throughout; every feature starts with a failing test.
 
 ## Out of Scope (future ideas, not built now)
 
-- Ion thrusters as shipped defaults (user can add via config today).
+- Ion thrusters as *active* shipped defaults (their VS2.3 stats ship
+  commented out in `default.toml`; they produce zero thrust in atmosphere).
 - Per-family environmental efficiency curves.
 - Optimal mixed-thruster loadout suggestion.
 - Named gravity presets (e.g. `-g moon`).
