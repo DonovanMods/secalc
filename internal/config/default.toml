@@ -12,7 +12,9 @@
 #
 # Table keys ([containers.s15m], [....sizes.s2m]) are arbitrary dot-free
 # identifiers: container keys are the CLI shortcuts (matched
-# case-insensitively); display text comes from each block's `name`.
+# case-insensitively); display text comes from each block's `name`. Because
+# the CLI grammar reads digit-leading tokens as masses, container keys must
+# start with a letter (letters, digits, '_' or '-' after that).
 
 [settings]
 margin = 1.5 # default target thrust-to-weight ratio (-m overrides)

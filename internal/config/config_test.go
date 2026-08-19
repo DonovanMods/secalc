@@ -118,6 +118,16 @@ func TestLoadValidatesMargin(t *testing.T) {
 	}
 }
 
+func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
+	dir := isolate(t)
+	writeUserConfig(t, dir, "[containers.2m]\nname = \"Two Metre Box\"\nmass = 500\ncapacity = 1000\n")
+
+	_, err := Load("")
+	if err == nil || !strings.Contains(err.Error(), "containers.2m") {
+		t.Fatalf("want containers.2m validation error, got %v", err)
+	}
+}
+
 func TestUserConfigPath(t *testing.T) {
 	dir := isolate(t)
 	got, err := UserConfigPath()

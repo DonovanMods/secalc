@@ -41,9 +41,10 @@ margin), accounting for the thrusters' own mass.
 
 writes the built-in defaults to `~/.config/se2calc/config.toml`. Your
 file only needs the keys you change — everything else falls back to the
-defaults. Add containers (the table key is the CLI shortcut), tweak
-stats after a game patch, or uncomment the ion thruster block for
-vacuum-world hauling.
+defaults. Add containers (the table key is the CLI shortcut, and must
+start with a letter since the expression grammar reads digit-leading
+tokens as masses), tweak stats after a game patch, or uncomment the ion
+thruster block for vacuum-world hauling.
 
 ## Game data
 

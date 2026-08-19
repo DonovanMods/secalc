@@ -9,10 +9,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 
 	"github.com/spf13/viper"
 )
+
+// containerKeyRe is the lowercase image of parse's shortcut grammar
+// (nameRe = ^[A-Za-z][A-Za-z0-9_-]*$); Viper lowercases TOML keys before
+// validate() sees them, so this is what a container key must match to ever
+// be reachable as a CLI shortcut.
+var containerKeyRe = regexp.MustCompile(`^[a-z][a-z0-9_-]*$`)
 
 // DefaultTOML is the embedded default configuration, written verbatim by
 // `se2calc init`.
@@ -122,6 +129,9 @@ func (c *Config) validate() error {
 		return fmt.Errorf("config: no containers defined")
 	}
 	for key, ct := range c.Containers {
+		if !containerKeyRe.MatchString(key) {
+			return fmt.Errorf("config: containers.%s: key must start with a letter and contain only letters, digits, '_' or '-' (the expression grammar reads digit-leading tokens as masses — try \"s%s\")", key, key)
+		}
 		if ct.Name == "" {
 			return fmt.Errorf("config: containers.%s: name is required", key)
 		}
