@@ -1,0 +1,141 @@
+# se2calc default configuration
+#
+# Data: Space Engineers 2 VS2.3 "Drive, Automate & Detonate" (July 2026),
+# from spaceengineers2.wiki.gg bot-extracted block pages (URLs below).
+# To customize: run `se2calc init` to write this file to
+# ~/.config/se2calc/config.toml, then edit it. Your file only needs the
+# keys you want to change; everything else falls back to these defaults.
+#
+# Units: mass kg, capacity kg (SE2 inventories are mass-limited, there is
+# no volume/density model), thrust N, power in each family's power_unit.
+# Gravity is given on the command line as a multiple of 9.81 m/s^2.
+#
+# Table keys ([containers.s15m], [....sizes.s2m]) are arbitrary dot-free
+# identifiers: container keys are the CLI shortcuts (matched
+# case-insensitively); display text comes from each block's `name`.
+
+[settings]
+margin = 1.5 # default target thrust-to-weight ratio (-m overrides)
+
+# --- Storage containers -------------------------------------------------
+
+# https://spaceengineers2.wiki.gg/wiki/Cargo_Container_1.5_m
+[containers.s15m]
+name = "Cargo Container 1.5 m"
+mass = 245.17
+capacity = 16800
+
+# https://spaceengineers2.wiki.gg/wiki/Cargo_Container_2.5_m
+[containers.s25m]
+name = "Cargo Container 2.5 m"
+mass = 669.08
+capacity = 67200
+
+# https://spaceengineers2.wiki.gg/wiki/Cargo_Container_7.5_m
+[containers.s75m]
+name = "Cargo Container 7.5 m"
+mass = 5092.09
+capacity = 2150400
+
+# --- Thrusters -----------------------------------------------------------
+# Per size: thrust N, mass kg, power in the family's power_unit (per
+# thruster, at max thrust).
+
+[thrusters.atmospheric]
+name = "Atmospheric"
+power_unit = "MW"
+
+# https://spaceengineers2.wiki.gg/wiki/Atmospheric_Thruster_1_m
+[thrusters.atmospheric.sizes.s1m]
+name = "1 m"
+thrust = 40000
+mass = 57.98
+power = 0.075
+
+# https://spaceengineers2.wiki.gg/wiki/Atmospheric_Thruster_2_m
+[thrusters.atmospheric.sizes.s2m]
+name = "2 m"
+thrust = 287136.3
+mass = 464.11
+power = 0.65
+
+# https://spaceengineers2.wiki.gg/wiki/Atmospheric_Thruster_5_m
+[thrusters.atmospheric.sizes.s5m]
+name = "5 m"
+thrust = 1516383
+mass = 1551.85
+power = 2.4
+
+# https://spaceengineers2.wiki.gg/wiki/Atmospheric_Thruster_10_m
+[thrusters.atmospheric.sizes.s10m]
+name = "10 m"
+thrust = 15465370
+mass = 8342.74
+power = 16
+
+[thrusters.hydrogen]
+name = "Hydrogen"
+power_unit = "units/s H2" # SE2 tracks hydrogen in unitless units, not liters
+
+# https://spaceengineers2.wiki.gg/wiki/Hydrogen_Thruster_0.5_m
+[thrusters.hydrogen.sizes.s05m]
+name = "0.5 m"
+thrust = 60000
+mass = 33.10
+power = 0.75
+
+# https://spaceengineers2.wiki.gg/wiki/Hydrogen_Thruster_2_m
+[thrusters.hydrogen.sizes.s2m]
+name = "2 m"
+thrust = 359468.8
+mass = 464.11
+power = 4
+
+# https://spaceengineers2.wiki.gg/wiki/Hydrogen_Thruster_2.5_m
+[thrusters.hydrogen.sizes.s25m]
+name = "2.5 m"
+thrust = 1895631
+mass = 1004.94
+power = 12
+
+# https://spaceengineers2.wiki.gg/wiki/Hydrogen_Thruster_7.5_m
+[thrusters.hydrogen.sizes.s75m]
+name = "7.5 m"
+thrust = 19395660
+mass = 7095.73
+power = 120
+
+# --- Ion thrusters (commented out) ---------------------------------------
+# Ion thrusters produce ZERO thrust in atmosphere (efficiency 0 atmo /
+# 1.0 space), so counting them toward planetary lift would mislead.
+# Uncomment this block in your override file for vacuum-world hauling.
+# Stats: https://spaceengineers2.wiki.gg/wiki/Ion_Thruster_1_m (and
+# _1.5_m, _5_m, _7.5_m siblings).
+#
+# [thrusters.ion]
+# name = "Ion"
+# power_unit = "MW"
+#
+# [thrusters.ion.sizes.s1m]
+# name = "1 m"
+# thrust = 8950.31
+# mass = 57.98
+# power = 0.04
+#
+# [thrusters.ion.sizes.s15m]
+# name = "1.5 m"
+# thrust = 82492.88
+# mass = 289.90
+# power = 0.24
+#
+# [thrusters.ion.sizes.s5m]
+# name = "5 m"
+# thrust = 856368.56
+# mass = 1576.05
+# power = 1.8
+#
+# [thrusters.ion.sizes.s75m]
+# name = "7.5 m"
+# thrust = 5636987
+# mass = 6188.45
+# power = 8
