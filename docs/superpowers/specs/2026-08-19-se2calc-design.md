@@ -51,8 +51,8 @@ se2calc init [--force]  write embedded default config to
 
 ## Input Grammar
 
-All positional args are joined with spaces, then tokenized — so `2*S1`,
-`2 * S1`, and `2 *S1` parse identically.
+All positional args are joined with spaces, then tokenized — so `2*s15m`,
+`2 * s15m`, and `2 *s15m` parse identically.
 
 ```
 expression := term ("+" term)*
@@ -65,7 +65,8 @@ shortcut   := config-defined container key, matched case-insensitively
 
 - Numbers accept comma thousands-separators and decimals: `1,230kg`, `1.23t`.
 - A bare number means kilograms.
-- Terms may appear in any order: `se2calc -g 0.5 1.23t + 2*S1 + S2 + 500`.
+- Terms may appear in any order:
+  `se2calc -g 0.5 1.23t + 2*s15m + s25m + 500`.
 - Unknown shortcut → error listing the shortcuts the active config defines.
 - `x` is accepted as a multiplier alongside `*` as shell-globbing insurance.
 
@@ -83,7 +84,7 @@ margin = 1.5          # default target thrust-to-weight ratio
 
 # Storage containers: the table key IS the CLI shortcut (case-insensitive;
 # keys are written lowercase — Viper lowercases all keys anyway).
-[containers.s1]
+[containers.s15m]
 name = "Cargo Container 1.5 m"
 mass = 245.17         # kg, empty
 capacity = 16800      # kg of cargo when full (SE2 inventories are mass-limited)
@@ -95,7 +96,7 @@ capacity = 16800      # kg of cargo when full (SE2 inventories are mass-limited)
 name = "Atmospheric"
 power_unit = "MW"     # unit for this family's consumption values
 
-[thrusters.atmospheric.sizes.s1]  # size keys are arbitrary dot-free ids
+[thrusters.atmospheric.sizes.s1m] # size keys are arbitrary dot-free ids
 name = "1 m"                      # display name
 thrust = 40000                    # N (verbatim from wiki sources)
 mass = 57.98                      # kg
@@ -214,7 +215,7 @@ TDD throughout; every feature starts with a failing test.
 - **output:** rendered-string tests against `io.Writer` — empty vs `--full`,
   not-viable rows, zero-g message.
 - **e2e:** root-command runs with a temp config, including the canonical
-  example `se2calc -g 0.5 1.23t + 2*S1 + S2`.
+  example `se2calc -g 0.5 1.23t + 2*s15m + s25m`.
 
 ## Project Conventions
 
