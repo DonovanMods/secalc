@@ -3,6 +3,11 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/DonovanMods/se2calc/internal/calc"
+	"github.com/DonovanMods/se2calc/internal/config"
+	"github.com/DonovanMods/se2calc/internal/output"
+	"github.com/DonovanMods/se2calc/internal/parse"
 )
 
 // Version is the semantic version of se2calc.
@@ -18,7 +23,38 @@ func NewRootCmd() *cobra.Command {
 		Args:         cobra.MinimumNArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil // wired up in a later task
+			flags := cmd.Flags()
+			configPath, _ := flags.GetString("config")
+			cfg, err := config.Load(configPath)
+			if err != nil {
+				return err
+			}
+
+			terms, err := parse.Expression(args, cfg.ShortcutKeys())
+			if err != nil {
+				return err
+			}
+
+			gravity, _ := flags.GetFloat64("gravity")
+			full, _ := flags.GetBool("full")
+			margin := cfg.Settings.Margin
+			if flags.Changed("margin") {
+				margin, _ = flags.GetFloat64("margin")
+			}
+
+			plan, err := calc.Build(calc.Input{
+				Terms:       terms,
+				Cfg:         cfg,
+				GravityMult: gravity,
+				Margin:      margin,
+				Full:        full,
+			})
+			if err != nil {
+				return err
+			}
+
+			output.Render(cmd.OutOrStdout(), plan)
+			return nil
 		},
 	}
 	root.Flags().Float64P("gravity", "g", 1.0, "gravity multiplier relative to Earth (1 g)")
