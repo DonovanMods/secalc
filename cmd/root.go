@@ -61,6 +61,7 @@ func NewRootCmd() *cobra.Command {
 	root.Flags().BoolP("full", "f", false, "use loaded container masses (empty mass + capacity)")
 	root.Flags().Float64P("margin", "m", 0, "target thrust-to-weight ratio (default: from config)")
 	root.Flags().String("config", "", "alternate config file")
+	root.AddCommand(newInitCmd())
 	return root
 }
 
