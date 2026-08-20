@@ -8,7 +8,7 @@ import (
 )
 
 // isolate points os.UserConfigDir at a temp dir so the developer's real
-// ~/.config/se2calc/config.toml never leaks into tests. It returns the
+// ~/.config/secalc/config.toml never leaks into tests. It returns the
 // temp config dir.
 func isolate(t *testing.T) string {
 	t.Helper()
@@ -19,7 +19,7 @@ func isolate(t *testing.T) string {
 
 func writeUserConfig(t *testing.T, dir, content string) {
 	t.Helper()
-	cfgDir := filepath.Join(dir, "se2calc")
+	cfgDir := filepath.Join(dir, "secalc")
 	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestUserConfigPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("UserConfigPath: %v", err)
 	}
-	want := filepath.Join(dir, "se2calc", "config.toml")
+	want := filepath.Join(dir, "secalc", "config.toml")
 	if got != want {
 		t.Errorf("UserConfigPath = %q, want %q", got, want)
 	}

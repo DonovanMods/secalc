@@ -3,8 +3,8 @@ package calc
 import (
 	"testing"
 
-	"github.com/DonovanMods/se2calc/internal/config"
-	"github.com/DonovanMods/se2calc/internal/parse"
+	"github.com/DonovanMods/secalc/internal/config"
+	"github.com/DonovanMods/secalc/internal/parse"
 )
 
 // testCfg builds a minimal config with one container and one

@@ -1,4 +1,4 @@
-// Package config loads se2calc settings: embedded defaults merged with the
+// Package config loads secalc settings: embedded defaults merged with the
 // user's config file and an optional explicit override. Viper is
 // quarantined here — the rest of the program sees only plain structs.
 package config
@@ -22,7 +22,7 @@ import (
 var containerKeyRe = regexp.MustCompile(`^[a-z][a-z0-9_-]*$`)
 
 // DefaultTOML is the embedded default configuration, written verbatim by
-// `se2calc init`.
+// `secalc init`.
 //
 //go:embed default.toml
 var DefaultTOML []byte
@@ -101,14 +101,14 @@ func Load(overridePath string) (*Config, error) {
 }
 
 // UserConfigPath returns the user config file location,
-// e.g. ~/.config/se2calc/config.toml (os.UserConfigDir respects
+// e.g. ~/.config/secalc/config.toml (os.UserConfigDir respects
 // XDG_CONFIG_HOME).
 func UserConfigPath() (string, error) {
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("locating user config dir: %w", err)
 	}
-	return filepath.Join(dir, "se2calc", "config.toml"), nil
+	return filepath.Join(dir, "secalc", "config.toml"), nil
 }
 
 // ShortcutKeys returns the container shortcut keys, sorted. Viper

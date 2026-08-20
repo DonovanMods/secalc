@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DonovanMods/se2calc/internal/config"
+	"github.com/DonovanMods/secalc/internal/config"
 )
 
 func runInit(t *testing.T, args ...string) (string, error) {
@@ -30,7 +30,7 @@ func TestInitWritesDefaults(t *testing.T) {
 		t.Fatalf("init: %v\n%s", err, out)
 	}
 
-	path := filepath.Join(dir, "se2calc", "config.toml")
+	path := filepath.Join(dir, "secalc", "config.toml")
 	got, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("reading %s: %v", path, err)
@@ -60,7 +60,7 @@ func TestInitRefusesOverwrite(t *testing.T) {
 func TestInitForceOverwrites(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
-	path := filepath.Join(dir, "se2calc", "config.toml")
+	path := filepath.Join(dir, "secalc", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -7,10 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/DonovanMods/se2calc/internal/config"
+	"github.com/DonovanMods/secalc/internal/config"
 )
 
-// newInitCmd builds `se2calc init`, which writes the embedded default
+// newInitCmd builds `secalc init`, which writes the embedded default
 // config to the user config path for editing.
 func newInitCmd() *cobra.Command {
 	c := &cobra.Command{

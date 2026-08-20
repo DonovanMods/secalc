@@ -7,8 +7,8 @@ import (
 	"math"
 	"sort"
 
-	"github.com/DonovanMods/se2calc/internal/config"
-	"github.com/DonovanMods/se2calc/internal/parse"
+	"github.com/DonovanMods/secalc/internal/config"
+	"github.com/DonovanMods/secalc/internal/parse"
 )
 
 // g0 is m/s^2 at 1 g (community-verified for SE2; see spec).

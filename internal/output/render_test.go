@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DonovanMods/se2calc/internal/calc"
+	"github.com/DonovanMods/secalc/internal/calc"
 )
 
 func TestRenderFullReport(t *testing.T) {

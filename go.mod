@@ -1,4 +1,4 @@
-module github.com/DonovanMods/se2calc
+module github.com/DonovanMods/secalc
 
 go 1.26
 

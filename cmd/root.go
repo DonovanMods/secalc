@@ -1,4 +1,4 @@
-// Package cmd wires the se2calc command-line interface.
+// Package cmd wires the secalc command-line interface.
 package cmd
 
 import (
@@ -9,33 +9,33 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/DonovanMods/se2calc/internal/calc"
-	"github.com/DonovanMods/se2calc/internal/config"
-	"github.com/DonovanMods/se2calc/internal/output"
-	"github.com/DonovanMods/se2calc/internal/parse"
+	"github.com/DonovanMods/secalc/internal/calc"
+	"github.com/DonovanMods/secalc/internal/config"
+	"github.com/DonovanMods/secalc/internal/output"
+	"github.com/DonovanMods/secalc/internal/parse"
 )
 
-// Version is the semantic version of se2calc.
-const Version = "0.1.0"
+// Version is the semantic version of secalc.
+const Version = "0.2.0"
 
 // NewRootCmd builds a fresh root command. A new instance is built per call
 // so tests never share flag state.
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "se2calc [flags] <expression>...",
+		Use:   "secalc [flags] <expression>...",
 		Short: "Space Engineers 2 thruster and mass calculator",
-		Long: `se2calc reports how many thrusters of each type lift a Space Engineers 2
+		Long: `secalc reports how many thrusters of each type lift a Space Engineers 2
 ship, and what they consume, from a mass expression.
 
 An expression is terms joined by "+": mass literals (1.23t, 1,230kg,
 bare kg) and storage shortcuts from the config (2*s15m, s25m), matched
-case-insensitively. Run "se2calc init" to write the default config for
+case-insensitively. Run "secalc init" to write the default config for
 editing.`,
-		Example: `  se2calc -g 0.5 1.23t + 2*s15m + s25m
-  se2calc --full 1t + 2*s15m`,
+		Example: `  secalc -g 0.5 1.23t + 2*s15m + s25m
+  secalc --full 1t + 2*s15m`,
 		Version: Version,
 		// ArbitraryArgs, not unset: with a subcommand present, cobra's
-		// default arg validator would reject "se2calc 1t" as an unknown
+		// default arg validator would reject "secalc 1t" as an unknown
 		// command.
 		Args:         cobra.ArbitraryArgs,
 		SilenceUsage: true,
@@ -107,7 +107,7 @@ func resolveGravity(raw string, presets map[string]float64) (float64, error) {
 	return 0, fmt.Errorf("unknown gravity %q (use a number or one of: %s)", raw, strings.Join(names, ", "))
 }
 
-// Execute runs se2calc and returns any execution error (cobra has already
+// Execute runs secalc and returns any execution error (cobra has already
 // printed it).
 func Execute() error {
 	return NewRootCmd().Execute()

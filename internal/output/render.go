@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/DonovanMods/se2calc/internal/calc"
+	"github.com/DonovanMods/secalc/internal/calc"
 )
 
 // separator is built with Repeat so its rune count provably matches the

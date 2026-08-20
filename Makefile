@@ -1,16 +1,16 @@
 .DEFAULT_GOAL := help
 
-BINARY := se2calc
+BINARY := secalc
 
 .PHONY: help build install test cover fmt vet check tidy clean
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-build: ## Build the se2calc binary
+build: ## Build the secalc binary
 	go build -o $(BINARY) .
 
-install: ## Build and install se2calc with go install
+install: ## Build and install secalc with go install
 	go install .
 
 test: ## Run the full test suite
