@@ -30,12 +30,16 @@ func TestInitWritesDefaults(t *testing.T) {
 		t.Fatalf("init: %v\n%s", err, out)
 	}
 
-	path := filepath.Join(dir, "secalc", "config.toml")
+	path := filepath.Join(dir, "secalc", "config-se2.toml")
 	got, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("reading %s: %v", path, err)
 	}
-	if !bytes.Equal(got, config.DefaultTOML) {
+	want, err := config.DefaultTOML("se2")
+	if err != nil {
+		t.Fatalf("DefaultTOML(se2): %v", err)
+	}
+	if !bytes.Equal(got, want) {
 		t.Error("written config differs from embedded defaults")
 	}
 	if !strings.Contains(out, path) {
@@ -60,7 +64,7 @@ func TestInitRefusesOverwrite(t *testing.T) {
 func TestInitForceOverwrites(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
-	path := filepath.Join(dir, "secalc", "config.toml")
+	path := filepath.Join(dir, "secalc", "config-se2.toml")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +79,11 @@ func TestInitForceOverwrites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(got, config.DefaultTOML) {
+	want, err := config.DefaultTOML("se2")
+	if err != nil {
+		t.Fatalf("DefaultTOML(se2): %v", err)
+	}
+	if !bytes.Equal(got, want) {
 		t.Error("--force should overwrite with embedded defaults")
 	}
 }

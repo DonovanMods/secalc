@@ -1,0 +1,177 @@
+# secalc default configuration — Space Engineers 1 (vanilla, both grids)
+#
+# Data: spaceengineers.wiki.gg (bot/community-maintained), current
+# post-v1.203 thruster metrics; page edit dates 2024-10 .. 2026-07.
+# Per-block source URLs below. Vanilla only — add DLC blocks in your
+# override file (~/.config/secalc/config-se1.toml).
+#
+# Units: mass kg, capacity_l LITERS at the x1 inventory multiplier
+# (multiply capacities by 3 or 10 for x3/x10 worlds), thrust N, power in
+# each family's power_unit. Gravity on the command line is a multiple of
+# 9.81 m/s^2. Container keys are CLI shortcuts (case-insensitive, must
+# start with a letter): sg/lg prefix = small/large grid.
+
+[settings]
+margin = 1.5
+# kg per liter of ore: 1 kg occupies 0.37 L (wiki-verified for Iron Ore
+# and Stone; all raw ores and ice share it in game data — ingots differ).
+# https://spaceengineers.wiki.gg/wiki/Iron_Ore
+# https://spaceengineers.wiki.gg/wiki/Stone
+cargo_density = 2.7027
+
+# --- Gravity presets ------------------------------------------------------
+# https://spaceengineers.wiki.gg/wiki/Planets
+
+[gravity]
+earthlike = 1.0
+mars = 0.9
+alien = 1.1
+pertam = 1.2
+triton = 1.0
+moon = 0.25
+europa = 0.25
+titan = 0.25
+space = 0.0
+
+# --- Storage containers ---------------------------------------------------
+# https://spaceengineers.wiki.gg/wiki/Cargo_Container (all rows; x1
+# multiplier). Large grid has no Medium container.
+
+[containers.sgs]
+name = "Small Cargo Container (small grid)"
+mass = 49.2
+capacity_l = 125
+
+[containers.sgm]
+name = "Medium Cargo Container (small grid)"
+mass = 274.8
+capacity_l = 3375
+
+[containers.sgl]
+name = "Large Cargo Container (small grid)"
+mass = 626.2
+capacity_l = 15625
+
+[containers.lgs]
+name = "Small Cargo Container (large grid)"
+mass = 648.4
+capacity_l = 15625
+
+[containers.lgl]
+name = "Large Cargo Container (large grid)"
+mass = 2593.6
+# Wiki-verbatim 421000 L; the widely cited in-game figure is 421875 L —
+# verify in game and override here if you need the exact value.
+capacity_l = 421000
+
+# --- Thrusters --------------------------------------------------------------
+# Per size: thrust N, mass kg, power in the family's power_unit, at max
+# thrust. SE1 hydrogen thrusters draw no electricity — fuel only.
+
+[thrusters.atmo_sg]
+name = "Atmospheric (small grid)"
+power_unit = "MW"
+
+# https://spaceengineers.wiki.gg/wiki/Atmospheric_Thruster
+[thrusters.atmo_sg.sizes.small]
+name = "Small"
+thrust = 96000
+mass = 699
+power = 0.6
+
+# https://spaceengineers.wiki.gg/wiki/Large_Atmospheric_Thruster
+[thrusters.atmo_sg.sizes.large]
+name = "Large"
+thrust = 576000
+mass = 2948
+power = 2.4
+
+[thrusters.atmo_lg]
+name = "Atmospheric (large grid)"
+power_unit = "MW"
+
+# https://spaceengineers.wiki.gg/wiki/Atmospheric_Thruster
+[thrusters.atmo_lg.sizes.small]
+name = "Small"
+thrust = 648000
+mass = 4000
+power = 2.4
+
+# https://spaceengineers.wiki.gg/wiki/Large_Atmospheric_Thruster
+[thrusters.atmo_lg.sizes.large]
+name = "Large"
+thrust = 6480000
+mass = 32970
+power = 16.8
+
+[thrusters.hydro_sg]
+name = "Hydrogen (small grid)"
+power_unit = "L/s H2"
+
+# https://spaceengineers.wiki.gg/wiki/Hydrogen_Thruster
+[thrusters.hydro_sg.sizes.small]
+name = "Small"
+thrust = 98400
+mass = 334
+power = 80.33
+
+# https://spaceengineers.wiki.gg/wiki/Large_Hydrogen_Thruster
+[thrusters.hydro_sg.sizes.large]
+name = "Large"
+thrust = 480000
+mass = 1222
+power = 385.60
+
+[thrusters.hydro_lg]
+name = "Hydrogen (large grid)"
+power_unit = "L/s H2"
+
+# https://spaceengineers.wiki.gg/wiki/Hydrogen_Thruster
+[thrusters.hydro_lg.sizes.small]
+name = "Small"
+thrust = 1080000
+mass = 1420
+power = 803.34
+
+# https://spaceengineers.wiki.gg/wiki/Large_Hydrogen_Thruster
+[thrusters.hydro_lg.sizes.large]
+name = "Large"
+thrust = 7200000
+mass = 6940
+power = 4820.05
+
+[thrusters.ion_sg]
+name = "Ion (small grid)"
+power_unit = "MW"
+
+# https://spaceengineers.wiki.gg/wiki/Ion_Thruster
+[thrusters.ion_sg.sizes.small]
+name = "Small"
+thrust = 14400
+mass = 121
+power = 0.2
+
+# https://spaceengineers.wiki.gg/wiki/Large_Ion_Thruster
+[thrusters.ion_sg.sizes.large]
+name = "Large"
+thrust = 172800
+mass = 721
+power = 2.4
+
+[thrusters.ion_lg]
+name = "Ion (large grid)"
+power_unit = "MW"
+
+# https://spaceengineers.wiki.gg/wiki/Ion_Thruster
+[thrusters.ion_lg.sizes.small]
+name = "Small"
+thrust = 345600
+mass = 4380
+power = 3.36
+
+# https://spaceengineers.wiki.gg/wiki/Large_Ion_Thruster
+[thrusters.ion_lg.sizes.large]
+name = "Large"
+thrust = 4320000
+mass = 43200
+power = 33.6

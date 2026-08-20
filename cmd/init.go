@@ -19,7 +19,7 @@ func newInitCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			force, _ := cmd.Flags().GetBool("force")
-			path, err := config.UserConfigPath()
+			path, err := config.UserConfigPath("se2")
 			if err != nil {
 				return err
 			}
@@ -31,7 +31,11 @@ func newInitCmd() *cobra.Command {
 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 				return fmt.Errorf("creating config dir: %w", err)
 			}
-			if err := os.WriteFile(path, config.DefaultTOML, 0o644); err != nil {
+			defaultTOML, err := config.DefaultTOML("se2")
+			if err != nil {
+				return err
+			}
+			if err := os.WriteFile(path, defaultTOML, 0o644); err != nil {
 				return fmt.Errorf("writing config: %w", err)
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Wrote %s\n", path)

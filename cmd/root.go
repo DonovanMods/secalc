@@ -45,7 +45,7 @@ editing.`,
 			}
 			flags := cmd.Flags()
 			configPath, _ := flags.GetString("config")
-			cfg, err := config.Load(configPath)
+			cfg, err := config.Load("se2", configPath)
 			if err != nil {
 				return err
 			}

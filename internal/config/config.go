@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -21,11 +22,27 @@ import (
 // be reachable as a CLI shortcut.
 var containerKeyRe = regexp.MustCompile(`^[a-z][a-z0-9_-]*$`)
 
-// DefaultTOML is the embedded default configuration, written verbatim by
-// `secalc init`.
-//
-//go:embed default.toml
-var DefaultTOML []byte
+//go:embed se2.toml
+var se2TOML []byte
+
+//go:embed se1.toml
+var se1TOML []byte
+
+// defaultTOMLs maps each supported game id to its embedded default
+// configuration, written verbatim by `secalc init`.
+var defaultTOMLs = map[string][]byte{"se2": se2TOML, "se1": se1TOML}
+
+// Games returns the supported game ids, primary first.
+func Games() []string { return []string{"se2", "se1"} }
+
+// DefaultTOML returns the embedded default configuration for a game.
+func DefaultTOML(game string) ([]byte, error) {
+	b, ok := defaultTOMLs[game]
+	if !ok {
+		return nil, fmt.Errorf("unknown game %q (valid: %s)", game, strings.Join(Games(), ", "))
+	}
+	return b, nil
+}
 
 // Settings holds calculator-wide tunables.
 type Settings struct {
@@ -74,18 +91,23 @@ type Config struct {
 	Gravity    map[string]float64        `mapstructure:"gravity"` // named -g presets, in multiples of 1 g
 }
 
-// Load returns the embedded defaults merged with the user config file (if
-// it exists) and then overridePath (if non-empty). Merging is per-key, so
-// override files need only the values that differ. A non-empty
+// Load returns the embedded defaults for game merged with the user config
+// file (if it exists) and then overridePath (if non-empty). Merging is
+// per-key, so override files need only the values that differ. A non-empty
 // overridePath that cannot be read is an error.
-func Load(overridePath string) (*Config, error) {
+func Load(game, overridePath string) (*Config, error) {
+	defaultTOML, err := DefaultTOML(game)
+	if err != nil {
+		return nil, err
+	}
+
 	v := viper.New()
 	v.SetConfigType("toml")
-	if err := v.ReadConfig(bytes.NewReader(DefaultTOML)); err != nil {
+	if err := v.ReadConfig(bytes.NewReader(defaultTOML)); err != nil {
 		return nil, fmt.Errorf("loading embedded defaults: %w", err)
 	}
 
-	if userPath, err := UserConfigPath(); err == nil {
+	if userPath, err := UserConfigPath(game); err == nil {
 		if _, statErr := os.Stat(userPath); statErr == nil {
 			v.SetConfigFile(userPath)
 			if err := v.MergeInConfig(); err != nil {
@@ -111,15 +133,18 @@ func Load(overridePath string) (*Config, error) {
 	return &cfg, nil
 }
 
-// UserConfigPath returns the user config file location,
-// e.g. ~/.config/secalc/config.toml (os.UserConfigDir respects
+// UserConfigPath returns the per-game user config file location,
+// e.g. ~/.config/secalc/config-se2.toml (os.UserConfigDir respects
 // XDG_CONFIG_HOME).
-func UserConfigPath() (string, error) {
+func UserConfigPath(game string) (string, error) {
+	if _, err := DefaultTOML(game); err != nil {
+		return "", err
+	}
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("locating user config dir: %w", err)
 	}
-	return filepath.Join(dir, "secalc", "config.toml"), nil
+	return filepath.Join(dir, "secalc", "config-"+game+".toml"), nil
 }
 
 // ShortcutKeys returns the container shortcut keys, sorted. Viper

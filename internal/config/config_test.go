@@ -8,7 +8,7 @@ import (
 )
 
 // isolate points os.UserConfigDir at a temp dir so the developer's real
-// ~/.config/secalc/config.toml never leaks into tests. It returns the
+// ~/.config/secalc/config-*.toml never leaks into tests. It returns the
 // temp config dir.
 func isolate(t *testing.T) string {
 	t.Helper()
@@ -17,13 +17,13 @@ func isolate(t *testing.T) string {
 	return dir
 }
 
-func writeUserConfig(t *testing.T, dir, content string) {
+func writeUserConfig(t *testing.T, dir, game, content string) {
 	t.Helper()
 	cfgDir := filepath.Join(dir, "secalc")
 	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(cfgDir, "config.toml"), []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(cfgDir, "config-"+game+".toml"), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -31,7 +31,7 @@ func writeUserConfig(t *testing.T, dir, content string) {
 func TestLoadDefaults(t *testing.T) {
 	isolate(t)
 
-	cfg, err := Load("")
+	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -62,9 +62,9 @@ func TestLoadDefaults(t *testing.T) {
 
 func TestLoadUserOverrideMergesPerKey(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "[settings]\nmargin = 2.0\n")
+	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 2.0\n")
 
-	cfg, err := Load("")
+	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -79,14 +79,14 @@ func TestLoadUserOverrideMergesPerKey(t *testing.T) {
 
 func TestLoadOverrideFileWinsAndMergesDeep(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "[settings]\nmargin = 2.0\n")
+	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 2.0\n")
 
 	override := filepath.Join(t.TempDir(), "override.toml")
 	if err := os.WriteFile(override, []byte("[containers.s15m]\nmass = 999\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
-	cfg, err := Load(override)
+	cfg, err := Load("se2", override)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -103,16 +103,16 @@ func TestLoadOverrideFileWinsAndMergesDeep(t *testing.T) {
 
 func TestLoadMissingOverrideFileErrors(t *testing.T) {
 	isolate(t)
-	if _, err := Load(filepath.Join(t.TempDir(), "nope.toml")); err == nil {
+	if _, err := Load("se2", filepath.Join(t.TempDir(), "nope.toml")); err == nil {
 		t.Fatal("Load with missing --config file: want error, got nil")
 	}
 }
 
 func TestLoadValidatesMargin(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "[settings]\nmargin = -1\n")
+	writeUserConfig(t, dir, "se2", "[settings]\nmargin = -1\n")
 
-	_, err := Load("")
+	_, err := Load("se2", "")
 	if err == nil || !strings.Contains(err.Error(), "settings.margin") {
 		t.Fatalf("want settings.margin validation error, got %v", err)
 	}
@@ -120,9 +120,9 @@ func TestLoadValidatesMargin(t *testing.T) {
 
 func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "[containers.2m]\nname = \"Two Metre Box\"\nmass = 500\ncapacity = 1000\n")
+	writeUserConfig(t, dir, "se2", "[containers.2m]\nname = \"Two Metre Box\"\nmass = 500\ncapacity = 1000\n")
 
-	_, err := Load("")
+	_, err := Load("se2", "")
 	if err == nil || !strings.Contains(err.Error(), "containers.2m") {
 		t.Fatalf("want containers.2m validation error, got %v", err)
 	}
@@ -130,11 +130,11 @@ func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
 
 func TestUserConfigPath(t *testing.T) {
 	dir := isolate(t)
-	got, err := UserConfigPath()
+	got, err := UserConfigPath("se1")
 	if err != nil {
 		t.Fatalf("UserConfigPath: %v", err)
 	}
-	want := filepath.Join(dir, "secalc", "config.toml")
+	want := filepath.Join(dir, "secalc", "config-se1.toml")
 	if got != want {
 		t.Errorf("UserConfigPath = %q, want %q", got, want)
 	}
@@ -142,7 +142,7 @@ func TestUserConfigPath(t *testing.T) {
 
 func TestLoadDefaultGravityPresets(t *testing.T) {
 	isolate(t)
-	cfg, err := Load("")
+	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -176,8 +176,8 @@ func TestLoadRejectsBadGravityPresets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := isolate(t)
-			writeUserConfig(t, dir, tt.toml)
-			_, err := Load("")
+			writeUserConfig(t, dir, "se2", tt.toml)
+			_, err := Load("se2", "")
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Fatalf("want error containing %q, got %v", tt.wantErr, err)
 			}
@@ -187,7 +187,7 @@ func TestLoadRejectsBadGravityPresets(t *testing.T) {
 
 func TestShortcutKeysSorted(t *testing.T) {
 	isolate(t)
-	cfg, err := Load("")
+	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -248,8 +248,8 @@ func TestLoadValidatesVolumetricCargo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := isolate(t)
-			writeUserConfig(t, dir, tt.toml)
-			_, err := Load("")
+			writeUserConfig(t, dir, "se2", tt.toml)
+			_, err := Load("se2", "")
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Fatalf("want error containing %q, got %v", tt.wantErr, err)
 			}
@@ -259,14 +259,80 @@ func TestLoadValidatesVolumetricCargo(t *testing.T) {
 
 func TestLoadAcceptsVolumetricContainer(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir,
+	writeUserConfig(t, dir, "se2",
 		"[settings]\ncargo_density = 2.7027\n[containers.vol]\nname = \"Vol Box\"\nmass = 100\ncapacity_l = 1000\n")
-	cfg, err := Load("")
+	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
 	if cfg.Containers["vol"].CapacityL != 1000 || cfg.Settings.CargoDensity != 2.7027 {
 		t.Errorf("volumetric fields not loaded: %+v, density %g",
 			cfg.Containers["vol"], cfg.Settings.CargoDensity)
+	}
+}
+
+func TestGamesOrder(t *testing.T) {
+	got := Games()
+	want := []string{"se2", "se1"}
+	if len(got) != 2 || got[0] != want[0] || got[1] != want[1] {
+		t.Fatalf("Games() = %v, want %v", got, want)
+	}
+}
+
+func TestDefaultTOMLUnknownGame(t *testing.T) {
+	if _, err := DefaultTOML("se3"); err == nil ||
+		!strings.Contains(err.Error(), "se3") || !strings.Contains(err.Error(), "se1") {
+		t.Fatalf("want unknown-game error naming se3 and listing valid ids, got %v", err)
+	}
+}
+
+func TestLoadSE1Defaults(t *testing.T) {
+	isolate(t)
+	cfg, err := Load("se1", "")
+	if err != nil {
+		t.Fatalf("Load(se1): %v", err)
+	}
+	if cfg.Settings.CargoDensity != 2.7027 {
+		t.Errorf("cargo_density = %g, want 2.7027", cfg.Settings.CargoDensity)
+	}
+	lgl, ok := cfg.Containers["lgl"]
+	if !ok || lgl.CapacityL != 421000 || lgl.Mass != 2593.6 {
+		t.Errorf("lgl = %+v, want mass 2593.6 capacity_l 421000", lgl)
+	}
+	if len(cfg.Thrusters) != 6 {
+		t.Errorf("thruster families = %d, want 6", len(cfg.Thrusters))
+	}
+	if got := cfg.Thrusters["hydro_lg"].Sizes["large"].Thrust; got != 7200000 {
+		t.Errorf("hydro_lg large thrust = %g, want 7200000", got)
+	}
+	if cfg.Gravity["pertam"] != 1.2 || cfg.Gravity["moon"] != 0.25 {
+		t.Errorf("gravity presets wrong: %+v", cfg.Gravity)
+	}
+}
+
+func TestLoadUnknownGame(t *testing.T) {
+	isolate(t)
+	if _, err := Load("se3", ""); err == nil {
+		t.Fatal("Load(se3): want error")
+	}
+}
+
+func TestPerGameUserFilesAreIsolated(t *testing.T) {
+	dir := isolate(t)
+	// An SE2 override must not leak into SE1 loads.
+	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 9.9\n") // writes config-se2.toml
+	se1, err := Load("se1", "")
+	if err != nil {
+		t.Fatalf("Load(se1): %v", err)
+	}
+	if se1.Settings.Margin == 9.9 {
+		t.Error("SE2 user file leaked into SE1 load")
+	}
+	se2, err := Load("se2", "")
+	if err != nil {
+		t.Fatalf("Load(se2): %v", err)
+	}
+	if se2.Settings.Margin != 9.9 {
+		t.Errorf("SE2 user file not applied to SE2 load: margin %g", se2.Settings.Margin)
 	}
 }

@@ -3,7 +3,7 @@
 # Data: Space Engineers 2 VS2.3 "Drive, Automate & Detonate" (July 2026),
 # from spaceengineers2.wiki.gg bot-extracted block pages (URLs below).
 # To customize: run `secalc init` to write this file to
-# ~/.config/secalc/config.toml, then edit it. Your file only needs the
+# ~/.config/secalc/config-se2.toml, then edit it. Your file only needs the
 # keys you want to change; everything else falls back to these defaults.
 #
 # Units: mass kg, capacity kg (SE2 inventories are mass-limited, there is
