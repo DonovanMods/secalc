@@ -229,4 +229,10 @@ TDD throughout; every feature starts with a failing test.
   commented out in `default.toml`; they produce zero thrust in atmosphere).
 - Per-family environmental efficiency curves.
 - Optimal mixed-thruster loadout suggestion.
-- Named gravity presets (e.g. `-g moon`).
+- Named gravity presets (e.g. `-g moon`). *(Shipped post-v0.1.0 as the
+  config `[gravity]` table.)*
+- Blueprint validation (`se2calc validate <blueprint>`): grade a real
+  ship's thrust/power against its mass. Feasible but tabled — the VR3B
+  blueprint format is undocumented and was reverse-engineered in
+  `docs/spikes/2026-08-19-blueprint-format.md`; planned as a separate
+  module when resumed.
