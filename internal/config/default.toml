@@ -1,9 +1,9 @@
-# se2calc default configuration
+# secalc default configuration
 #
 # Data: Space Engineers 2 VS2.3 "Drive, Automate & Detonate" (July 2026),
 # from spaceengineers2.wiki.gg bot-extracted block pages (URLs below).
-# To customize: run `se2calc init` to write this file to
-# ~/.config/se2calc/config.toml, then edit it. Your file only needs the
+# To customize: run `secalc init` to write this file to
+# ~/.config/secalc/config.toml, then edit it. Your file only needs the
 # keys you want to change; everything else falls back to these defaults.
 #
 # Units: mass kg, capacity kg (SE2 inventories are mass-limited, there is
@@ -20,7 +20,7 @@
 margin = 1.5 # default target thrust-to-weight ratio (-m overrides)
 
 # --- Gravity presets ------------------------------------------------------
-# Named values for -g (e.g. `se2calc -g palatine ...`); plain numbers still
+# Named values for -g (e.g. `secalc -g palatine ...`); plain numbers still
 # work. Preset names follow the same shape rule as container keys (start
 # with a letter). Values are multiples of 9.81 m/s^2.
 
