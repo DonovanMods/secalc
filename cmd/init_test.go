@@ -21,7 +21,16 @@ func runInit(t *testing.T, args ...string) (string, error) {
 	return out.String(), err
 }
 
-func TestInitWritesDefaults(t *testing.T) {
+func mustDefault(t *testing.T, game string) []byte {
+	t.Helper()
+	b, err := config.DefaultTOML(game)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+func TestInitWritesBothGames(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
@@ -29,42 +38,50 @@ func TestInitWritesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init: %v\n%s", err, out)
 	}
-
-	path := filepath.Join(dir, "secalc", "config-se2.toml")
-	got, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("reading %s: %v", path, err)
-	}
-	want, err := config.DefaultTOML("se2")
-	if err != nil {
-		t.Fatalf("DefaultTOML(se2): %v", err)
-	}
-	if !bytes.Equal(got, want) {
-		t.Error("written config differs from embedded defaults")
-	}
-	if !strings.Contains(out, path) {
-		t.Errorf("init should print the written path %q, got:\n%s", path, out)
+	for _, game := range config.Games() {
+		path := filepath.Join(dir, "secalc", "config-"+game+".toml")
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		if !bytes.Equal(got, mustDefault(t, game)) {
+			t.Errorf("%s differs from embedded %s defaults", path, game)
+		}
+		if !strings.Contains(out, path) {
+			t.Errorf("init output should name %s:\n%s", path, out)
+		}
 	}
 }
 
-func TestInitRefusesOverwrite(t *testing.T) {
+func TestInitSkipsExistingWithoutForce(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
 	if _, err := runInit(t); err != nil {
 		t.Fatalf("first init: %v", err)
 	}
-	if _, err := runInit(t); err == nil {
-		t.Fatal("second init without --force: want error")
-	} else if !strings.Contains(err.Error(), "--force") {
-		t.Errorf("error should mention --force: %v", err)
+	// Corrupt one file, then re-run without --force: both skipped, exit 0.
+	se2Path := filepath.Join(dir, "secalc", "config-se2.toml")
+	if err := os.WriteFile(se2Path, []byte("# user-tweaked"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, err := runInit(t)
+	if err != nil {
+		t.Fatalf("second init should not error: %v", err)
+	}
+	if !strings.Contains(out, "Skipped") || !strings.Contains(out, "--force") {
+		t.Errorf("want per-file skip notes mentioning --force:\n%s", out)
+	}
+	got, _ := os.ReadFile(se2Path)
+	if !bytes.Equal(got, []byte("# user-tweaked")) {
+		t.Error("skip must not touch the existing file")
 	}
 }
 
 func TestInitForceOverwrites(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
-	path := filepath.Join(dir, "secalc", "config-se2.toml")
+	path := filepath.Join(dir, "secalc", "config-se1.toml")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -79,11 +96,7 @@ func TestInitForceOverwrites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want, err := config.DefaultTOML("se2")
-	if err != nil {
-		t.Fatalf("DefaultTOML(se2): %v", err)
-	}
-	if !bytes.Equal(got, want) {
-		t.Error("--force should overwrite with embedded defaults")
+	if !bytes.Equal(got, mustDefault(t, "se1")) {
+		t.Error("--force should overwrite with embedded se1 defaults")
 	}
 }
