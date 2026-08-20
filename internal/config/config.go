@@ -91,36 +91,37 @@ type Config struct {
 	Gravity    map[string]float64        `mapstructure:"gravity"` // named -g presets, in multiples of 1 g
 }
 
-// Load returns the embedded defaults for game merged with the user config
-// file (if it exists) and then overridePath (if non-empty). Merging is
-// per-key, so override files need only the values that differ. A non-empty
-// overridePath that cannot be read is an error.
+// Load resolves ONE configuration source and loads it wholesale — no
+// merging. Precedence: an explicit overridePath (--config) is the entire
+// config; otherwise the game's user file, if present, is the entire
+// config; otherwise the embedded defaults apply. A present file replaces
+// the defaults completely so users can reshape, remove, or add blocks
+// freely (modded setups included); `secalc init` writes complete
+// starting copies.
 func Load(game, overridePath string) (*Config, error) {
 	defaultTOML, err := DefaultTOML(game)
 	if err != nil {
 		return nil, err
 	}
 
-	v := viper.New()
-	v.SetConfigType("toml")
-	if err := v.ReadConfig(bytes.NewReader(defaultTOML)); err != nil {
-		return nil, fmt.Errorf("loading embedded defaults: %w", err)
-	}
-
-	if userPath, err := UserConfigPath(game); err == nil {
-		if _, statErr := os.Stat(userPath); statErr == nil {
-			v.SetConfigFile(userPath)
-			if err := v.MergeInConfig(); err != nil {
-				return nil, fmt.Errorf("merging %s: %w", userPath, err)
+	file := overridePath
+	if file == "" {
+		if userPath, err := UserConfigPath(game); err == nil {
+			if _, statErr := os.Stat(userPath); statErr == nil {
+				file = userPath
 			}
 		}
 	}
 
-	if overridePath != "" {
-		v.SetConfigFile(overridePath)
-		if err := v.MergeInConfig(); err != nil {
-			return nil, fmt.Errorf("merging %s: %w", overridePath, err)
+	v := viper.New()
+	v.SetConfigType("toml")
+	if file != "" {
+		v.SetConfigFile(file)
+		if err := v.ReadInConfig(); err != nil {
+			return nil, fmt.Errorf("reading %s: %w", file, err)
 		}
+	} else if err := v.ReadConfig(bytes.NewReader(defaultTOML)); err != nil {
+		return nil, fmt.Errorf("loading embedded defaults: %w", err)
 	}
 
 	var cfg Config
@@ -198,10 +199,9 @@ func (c *Config) validate() error {
 	if len(c.Thrusters) == 0 {
 		return fmt.Errorf("config: no thruster families defined")
 	}
-	// Duplicate display names are almost always the copied-config rename
-	// trap: user files merge per-key OVER the embedded defaults, so a
-	// renamed key yields both the original and the copy. Iterate sorted
-	// keys so the reported pair is deterministic.
+	// Duplicate display names make output rows indistinguishable and are
+	// almost always copy-paste accidents. Iterate sorted keys so the
+	// reported pair is deterministic.
 	familyKeys := make([]string, 0, len(c.Thrusters))
 	for fk := range c.Thrusters {
 		familyKeys = append(familyKeys, fk)
@@ -214,7 +214,7 @@ func (c *Config) validate() error {
 			return fmt.Errorf("config: thrusters.%s: name and power_unit are required", fk)
 		}
 		if prev, dup := familyByName[fam.Name]; dup {
-			return fmt.Errorf("config: thruster families %s and %s share the name %q — if you renamed family keys in a copied config, the embedded defaults still provide the originals; keep the original keys and edit values instead", prev, fk, fam.Name)
+			return fmt.Errorf("config: thruster families %s and %s share the name %q — family names must be unique", prev, fk, fam.Name)
 		}
 		familyByName[fam.Name] = fk
 		if len(fam.Sizes) == 0 {
@@ -232,7 +232,7 @@ func (c *Config) validate() error {
 				return fmt.Errorf("config: thrusters.%s.sizes.%s: name is required", fk, sk)
 			}
 			if prev, dup := sizeByName[s.Name]; dup {
-				return fmt.Errorf("config: thrusters.%s: sizes %s and %s share the name %q — if you renamed size keys in a copied config, the embedded defaults still provide the originals; edit values under the original keys instead (size keys are internal and never typed on the CLI)", fk, prev, sk, s.Name)
+				return fmt.Errorf("config: thrusters.%s: sizes %s and %s share the name %q — size names must be unique within a family", fk, prev, sk, s.Name)
 			}
 			sizeByName[s.Name] = sk
 			if s.Thrust <= 0 {

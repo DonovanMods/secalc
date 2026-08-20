@@ -28,6 +28,29 @@ func writeUserConfig(t *testing.T, dir, game, content string) {
 	}
 }
 
+// completeConfig builds a full, valid standalone config. Under
+// replacement semantics a present file IS the whole config, so test
+// fixtures must be complete. settings is the [settings] body; bodyExtra
+// is appended after the base blocks.
+func completeConfig(settings, bodyExtra string) string {
+	return "[settings]\n" + settings + `
+[containers.base]
+name = "Base Box"
+mass = 100
+capacity = 900
+
+[thrusters.lift]
+name = "Lift"
+power_unit = "MW"
+
+[thrusters.lift.sizes.a]
+name = "A"
+thrust = 50000
+mass = 1000
+power = 0.5
+` + bodyExtra
+}
+
 func TestLoadDefaults(t *testing.T) {
 	isolate(t)
 
@@ -60,29 +83,45 @@ func TestLoadDefaults(t *testing.T) {
 	}
 }
 
-func TestLoadUserOverrideMergesPerKey(t *testing.T) {
+func TestLoadUserFileReplacesDefaults(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 2.0\n")
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 2.0\n", ""))
 
 	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
+	// The file IS the config: nothing from the embedded defaults leaks in.
 	if cfg.Settings.Margin != 2.0 {
 		t.Errorf("Margin = %g, want 2.0 from user file", cfg.Settings.Margin)
 	}
-	// Everything not overridden must survive the merge.
-	if len(cfg.Containers) != 3 {
-		t.Errorf("containers = %v, want the 3 defaults", cfg.ShortcutKeys())
+	if len(cfg.Containers) != 1 || cfg.Containers["base"].Name != "Base Box" {
+		t.Errorf("containers = %v, want only the file's base container", cfg.ShortcutKeys())
+	}
+	if len(cfg.Thrusters) != 1 {
+		t.Errorf("thrusters = %d families, want only the file's 1", len(cfg.Thrusters))
+	}
+	if len(cfg.Gravity) != 0 {
+		t.Errorf("gravity = %v, want none (file defines none)", cfg.Gravity)
 	}
 }
 
-func TestLoadOverrideFileWinsAndMergesDeep(t *testing.T) {
+func TestLoadSparseUserFileFails(t *testing.T) {
 	dir := isolate(t)
+	// Replacement semantics: a sparse fragment no longer inherits the
+	// rest from the embedded defaults, so it fails completeness checks.
 	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 2.0\n")
+	if _, err := Load("se2", ""); err == nil || !strings.Contains(err.Error(), "no containers") {
+		t.Fatalf("want completeness validation error, got %v", err)
+	}
+}
+
+func TestLoadConfigFlagIsTheEntireConfig(t *testing.T) {
+	dir := isolate(t)
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 2.0\n", ""))
 
 	override := filepath.Join(t.TempDir(), "override.toml")
-	if err := os.WriteFile(override, []byte("[containers.s15m]\nmass = 999\n"), 0o644); err != nil {
+	if err := os.WriteFile(override, []byte(completeConfig("margin = 3.0\n", "")), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -90,14 +129,13 @@ func TestLoadOverrideFileWinsAndMergesDeep(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if cfg.Settings.Margin != 2.0 {
-		t.Errorf("Margin = %g, want 2.0 (user file survives)", cfg.Settings.Margin)
+	// --config wins wholesale: neither the user file nor the embedded
+	// defaults contribute anything.
+	if cfg.Settings.Margin != 3.0 {
+		t.Errorf("Margin = %g, want 3.0 from --config file only", cfg.Settings.Margin)
 	}
-	if cfg.Containers["s15m"].Mass != 999 {
-		t.Errorf("s15m.Mass = %g, want 999 from override", cfg.Containers["s15m"].Mass)
-	}
-	if cfg.Containers["s15m"].Capacity != 16800 {
-		t.Errorf("s15m.Capacity = %g, want 16800 (sibling key survives deep merge)", cfg.Containers["s15m"].Capacity)
+	if len(cfg.Containers) != 1 {
+		t.Errorf("containers = %v, want only the --config file's", cfg.ShortcutKeys())
 	}
 }
 
@@ -110,7 +148,7 @@ func TestLoadMissingOverrideFileErrors(t *testing.T) {
 
 func TestLoadValidatesMargin(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "se2", "[settings]\nmargin = -1\n")
+	writeUserConfig(t, dir, "se2", completeConfig("margin = -1\n", ""))
 
 	_, err := Load("se2", "")
 	if err == nil || !strings.Contains(err.Error(), "settings.margin") {
@@ -120,7 +158,7 @@ func TestLoadValidatesMargin(t *testing.T) {
 
 func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "se2", "[containers.2m]\nname = \"Two Metre Box\"\nmass = 500\ncapacity = 1000\n")
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 1.5\n", "[containers.2m]\nname = \"Two Metre Box\"\nmass = 500\ncapacity = 1000\n"))
 
 	_, err := Load("se2", "")
 	if err == nil || !strings.Contains(err.Error(), "containers.2m") {
@@ -130,16 +168,16 @@ func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
 
 func TestLoadRejectsDuplicateSizeNames(t *testing.T) {
 	dir := isolate(t)
-	// A copied config with a renamed size key: the embedded defaults still
-	// supply s1m ("1 m"), so ta1m duplicates the display name.
-	writeUserConfig(t, dir, "se2",
-		"[thrusters.atmospheric.sizes.ta1m]\nname = \"1 m\"\nthrust = 40000\nmass = 57.98\npower = 0.075\n")
+	// Two sizes in ONE file sharing a display name is almost certainly a
+	// copy-paste accident, and makes output rows indistinguishable.
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 1.5\n",
+		"[thrusters.lift.sizes.b]\nname = \"A\"\nthrust = 1000\nmass = 1\npower = 0.1\n"))
 
 	_, err := Load("se2", "")
 	if err == nil {
 		t.Fatal("want duplicate-size-name error, got nil")
 	}
-	for _, want := range []string{"atmospheric", "1 m", "s1m", "ta1m", "renamed"} {
+	for _, want := range []string{"lift", "a and b", `"A"`, "unique"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Errorf("error should mention %q: %v", want, err)
 		}
@@ -148,12 +186,12 @@ func TestLoadRejectsDuplicateSizeNames(t *testing.T) {
 
 func TestLoadRejectsDuplicateFamilyNames(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "se2",
-		"[thrusters.atmo2]\nname = \"Atmospheric\"\npower_unit = \"MW\"\n[thrusters.atmo2.sizes.x]\nname = \"X\"\nthrust = 1000\nmass = 1\npower = 0.1\n")
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 1.5\n",
+		"[thrusters.m]\nname = \"Lift\"\npower_unit = \"MW\"\n[thrusters.m.sizes.x]\nname = \"X\"\nthrust = 1000\nmass = 1\npower = 0.1\n"))
 
 	_, err := Load("se2", "")
-	if err == nil || !strings.Contains(err.Error(), "Atmospheric") {
-		t.Fatalf("want duplicate-family-name error naming Atmospheric, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), `"Lift"`) || !strings.Contains(err.Error(), "lift and m") {
+		t.Fatalf("want duplicate-family-name error naming lift and m, got %v", err)
 	}
 }
 
@@ -199,8 +237,8 @@ func TestLoadRejectsBadGravityPresets(t *testing.T) {
 		toml    string
 		wantErr string
 	}{
-		{"digit-leading key", "[gravity]\n\"2x\" = 0.5\n", "gravity.2x"},
-		{"negative value", "[gravity]\npit = -1\n", "gravity.pit"},
+		{"digit-leading key", completeConfig("margin = 1.5\n", "[gravity]\n\"2x\" = 0.5\n"), "gravity.2x"},
+		{"negative value", completeConfig("margin = 1.5\n", "[gravity]\npit = -1\n"), "gravity.pit"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -260,17 +298,17 @@ func TestLoadValidatesVolumetricCargo(t *testing.T) {
 	}{
 		{
 			"both capacities set",
-			"[containers.dual]\nname = \"Dual\"\nmass = 1\ncapacity = 5\ncapacity_l = 5\n",
+			completeConfig("margin = 1.5\n", "[containers.dual]\nname = \"Dual\"\nmass = 1\ncapacity = 5\ncapacity_l = 5\n"),
 			"containers.dual",
 		},
 		{
 			"capacity_l without density",
-			"[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = 5\n",
+			completeConfig("margin = 1.5\n", "[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = 5\n"),
 			"cargo_density",
 		},
 		{
 			"negative capacity_l",
-			"[settings]\ncargo_density = 2.5\n[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = -1\n",
+			completeConfig("margin = 1.5\ncargo_density = 2.5\n", "[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = -1\n"),
 			"containers.vol",
 		},
 	}
@@ -288,8 +326,8 @@ func TestLoadValidatesVolumetricCargo(t *testing.T) {
 
 func TestLoadAcceptsVolumetricContainer(t *testing.T) {
 	dir := isolate(t)
-	writeUserConfig(t, dir, "se2",
-		"[settings]\ncargo_density = 2.7027\n[containers.vol]\nname = \"Vol Box\"\nmass = 100\ncapacity_l = 1000\n")
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 1.5\ncargo_density = 2.7027\n",
+		"[containers.vol]\nname = \"Vol Box\"\nmass = 100\ncapacity_l = 1000\n"))
 	cfg, err := Load("se2", "")
 	if err != nil {
 		t.Fatalf("Load: %v", err)
@@ -349,7 +387,7 @@ func TestLoadUnknownGame(t *testing.T) {
 func TestPerGameUserFilesAreIsolated(t *testing.T) {
 	dir := isolate(t)
 	// An SE2 override must not leak into SE1 loads.
-	writeUserConfig(t, dir, "se2", "[settings]\nmargin = 9.9\n") // writes config-se2.toml
+	writeUserConfig(t, dir, "se2", completeConfig("margin = 9.9\n", "")) // writes config-se2.toml
 	se1, err := Load("se1", "")
 	if err != nil {
 		t.Fatalf("Load(se1): %v", err)

@@ -33,7 +33,7 @@ Flags:
 | `-g, --gravity` | gravity multiplier relative to Earth 1 g (default 1), or a named preset like `-g palatine` (SE2) / `-g moon` (SE1) |
 | `-f, --full`    | count containers as loaded |
 | `-m, --margin`  | target thrust-to-weight ratio (default 1.5, from config) |
-| `--config`      | extra config file merged on top of the selected stack |
+| `--config`      | use this file as the entire config (overrides the per-game stack) |
 
 Each output line is an independent solution: "Atmospheric (large grid)
 Small: 3" means three of those thrusters alone would lift the ship
@@ -45,7 +45,11 @@ Small: 3" means three of those thrusters alone would lift the ship
 
 writes both games' defaults to `~/.config/secalc/` as
 `config-se2.toml` and `config-se1.toml` (existing files are skipped;
-`--force` overwrites). Your file only needs the keys you change.
+`--force` overwrites). A present config file REPLACES the embedded
+defaults entirely — it is the whole config, so you can rename keys,
+remove blocks, or model modded setups freely; keep it complete
+(settings, containers, at least one thruster family). After a game
+patch, re-run `secalc init --force` and re-apply your edits.
 Container keys are the CLI shortcuts (they must start with a letter);
 the `[gravity]` table defines the named `-g` presets.
 

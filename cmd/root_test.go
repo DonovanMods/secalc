@@ -16,7 +16,7 @@ func TestVersionFlag(t *testing.T) {
 	if err := root.Execute(); err != nil {
 		t.Fatalf("--version: unexpected error: %v", err)
 	}
-	want := "secalc version 0.3.1\n"
+	want := "secalc version 0.4.0\n"
 	if out.String() != want {
 		t.Errorf("output = %q, want %q", out.String(), want)
 	}

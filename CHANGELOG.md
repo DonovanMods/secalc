@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.4.0] - 2026-08-20
+
+### Changed
+
+- **Breaking:** config files now REPLACE the embedded defaults instead
+  of merging over them. A present `config-<game>.toml` (or `--config`
+  file) is the entire config — rename keys, remove blocks, or model
+  modded setups freely; sparse override fragments no longer inherit the
+  rest. Run `secalc init` for complete starting copies.
+- The v0.3.1 merged-name collision errors are gone with the merge
+  itself; duplicate display names within one file still fail fast.
+
 ## [0.3.1] - 2026-08-20
 
 ### Fixed

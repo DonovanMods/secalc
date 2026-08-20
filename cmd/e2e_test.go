@@ -15,6 +15,10 @@ const testConfigTOML = `
 [settings]
 margin = 1.5
 
+[gravity]
+palatine = 0.33
+space = 0.0
+
 [containers.s1]
 name = "Small Box"
 mass = 100

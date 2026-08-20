@@ -3,8 +3,10 @@
 # Data: Space Engineers 2 VS2.3 "Drive, Automate & Detonate" (July 2026),
 # from spaceengineers2.wiki.gg bot-extracted block pages (URLs below).
 # To customize: run `secalc init` to write this file to
-# ~/.config/secalc/config-se2.toml, then edit it. Your file only needs the
-# keys you want to change; everything else falls back to these defaults.
+# ~/.config/secalc/config-se2.toml, then edit it. A present config file
+# REPLACES these defaults entirely — reshape it freely (rename keys,
+# remove blocks, add modded ones) but keep it complete: settings,
+# containers, and at least one thruster family.
 #
 # Units: mass kg, capacity kg (SE2 inventories are mass-limited, there is
 # no volume/density model), thrust N, power in each family's power_unit.
@@ -58,10 +60,8 @@ capacity = 2150400
 # --- Thrusters -----------------------------------------------------------
 # Per size: thrust N, mass kg, power in the family's power_unit (per
 # thruster, at max thrust).
-# Family/size table keys are internal ids, never typed on the CLI. To
-# tweak a value, edit it under the SAME key — renaming keys in a copied
-# file duplicates blocks, because the embedded defaults still provide
-# the originals (secalc will refuse to load such a config).
+# Family/size table keys are internal ids, never typed on the CLI;
+# name them however you like. Display names must be unique per family.
 
 [thrusters.atmospheric]
 name = "Atmospheric"

@@ -16,7 +16,7 @@ import (
 )
 
 // Version is the semantic version of secalc.
-const Version = "0.3.1"
+const Version = "0.4.0"
 
 // NewRootCmd builds a fresh root command. A new instance is built per call
 // so tests never share flag state.
