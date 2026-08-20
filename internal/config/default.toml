@@ -26,8 +26,8 @@ margin = 1.5 # default target thrust-to-weight ratio (-m overrides)
 
 [gravity]
 verdure = 1.0    # planet; ~1 g, community-verified (see README, Game data)
-palatine = 0.33  # moon; https://spaceengineers2.wiki.gg/wiki/Palatine
-caligo = 0.416   # moon; https://spaceengineers2.wiki.gg/wiki/Caligo
+palatine = 0.33  # Verdure's moon; https://spaceengineers2.wiki.gg/wiki/Palatine
+caligo = 0.416   # Kemik's moon; https://spaceengineers2.wiki.gg/wiki/Caligo
 space = 0.0      # convenience: zero gravity
 
 # Starting planets whose gravity the wiki does not document yet — read the
