@@ -140,6 +140,51 @@ func TestUserConfigPath(t *testing.T) {
 	}
 }
 
+func TestLoadDefaultGravityPresets(t *testing.T) {
+	isolate(t)
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	want := map[string]float64{
+		"verdure":  1.0,
+		"palatine": 0.33,
+		"caligo":   0.416,
+		"space":    0,
+	}
+	for name, mult := range want {
+		got, ok := cfg.Gravity[name]
+		if !ok {
+			t.Errorf("gravity preset %q missing from defaults", name)
+			continue
+		}
+		if got != mult {
+			t.Errorf("gravity[%q] = %g, want %g", name, got, mult)
+		}
+	}
+}
+
+func TestLoadRejectsBadGravityPresets(t *testing.T) {
+	tests := []struct {
+		name    string
+		toml    string
+		wantErr string
+	}{
+		{"digit-leading key", "[gravity]\n\"2x\" = 0.5\n", "gravity.2x"},
+		{"negative value", "[gravity]\npit = -1\n", "gravity.pit"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := isolate(t)
+			writeUserConfig(t, dir, tt.toml)
+			_, err := Load("")
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("want error containing %q, got %v", tt.wantErr, err)
+			}
+		})
+	}
+}
+
 func TestShortcutKeysSorted(t *testing.T) {
 	isolate(t)
 	cfg, err := Load("")

@@ -9,6 +9,9 @@ This project adheres to [Semantic Versioning](https://semver.org).
 
 - Makefile wrapping common development tasks (`make help` lists them);
   `make check` runs the formatting/vet/test gate.
+- Named gravity presets from the config's `[gravity]` table:
+  `-g palatine` resolves to 0.33 g. Ships verdure/palatine/caligo/space;
+  numbers keep working; unknown names error listing the presets.
 
 ### Changed
 

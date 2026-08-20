@@ -113,6 +113,49 @@ func TestE2EMarginFlagOverridesConfig(t *testing.T) {
 	}
 }
 
+func TestE2EGravityPresetName(t *testing.T) {
+	// Presets come from the embedded defaults, which the temp --config
+	// merges over — palatine is defined there as 0.33.
+	out, err := run(t, "-g", "palatine", "1t")
+	if err != nil {
+		t.Fatalf("run: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "Gravity: 0.33 g") {
+		t.Errorf("want palatine resolved to 0.33 g in header:\n%s", out)
+	}
+}
+
+func TestE2EGravityPresetCaseInsensitive(t *testing.T) {
+	out, err := run(t, "-g", "Palatine", "1t")
+	if err != nil {
+		t.Fatalf("run: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "Gravity: 0.33 g") {
+		t.Errorf("want Palatine (mixed case) resolved to 0.33 g:\n%s", out)
+	}
+}
+
+func TestE2EGravityPresetSpace(t *testing.T) {
+	out, err := run(t, "-g", "space", "1t")
+	if err != nil {
+		t.Fatalf("run: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "Zero gravity — no thrust needed to hover.") {
+		t.Errorf("want space preset to trigger zero-gravity message:\n%s", out)
+	}
+}
+
+func TestE2EGravityPresetUnknown(t *testing.T) {
+	out, err := run(t, "-g", "nonsense", "1t")
+	if err == nil {
+		t.Fatalf("want error for unknown gravity preset, got output:\n%s", out)
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "nonsense") || !strings.Contains(msg, "palatine") {
+		t.Errorf("error should name the bad preset and list known ones: %q", msg)
+	}
+}
+
 func TestE2EZeroGravity(t *testing.T) {
 	out, err := run(t, "-g", "0", "1t")
 	if err != nil {

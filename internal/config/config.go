@@ -60,6 +60,7 @@ type Config struct {
 	Settings   Settings                  `mapstructure:"settings"`
 	Containers map[string]Container      `mapstructure:"containers"`
 	Thrusters  map[string]ThrusterFamily `mapstructure:"thrusters"`
+	Gravity    map[string]float64        `mapstructure:"gravity"` // named -g presets, in multiples of 1 g
 }
 
 // Load returns the embedded defaults merged with the user config file (if
@@ -137,6 +138,16 @@ func (c *Config) validate() error {
 		}
 		if ct.Mass < 0 || ct.Capacity < 0 {
 			return fmt.Errorf("config: containers.%s: mass and capacity must be >= 0", key)
+		}
+	}
+	// Gravity preset keys follow the container-key shape: a numeric-looking
+	// name could never win against -g's number parsing.
+	for key, mult := range c.Gravity {
+		if !containerKeyRe.MatchString(key) {
+			return fmt.Errorf("config: gravity.%s: preset name must start with a letter and contain only letters, digits, '_' or '-'", key)
+		}
+		if mult < 0 {
+			return fmt.Errorf("config: gravity.%s: multiplier must be >= 0 (got %g)", key, mult)
 		}
 	}
 	if len(c.Thrusters) == 0 {

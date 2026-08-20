@@ -2,6 +2,11 @@
 package cmd
 
 import (
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/spf13/cobra"
 
 	"github.com/DonovanMods/se2calc/internal/calc"
@@ -50,7 +55,11 @@ editing.`,
 				return err
 			}
 
-			gravity, _ := flags.GetFloat64("gravity")
+			gravityRaw, _ := flags.GetString("gravity")
+			gravity, err := resolveGravity(gravityRaw, cfg.Gravity)
+			if err != nil {
+				return err
+			}
 			full, _ := flags.GetBool("full")
 			margin := cfg.Settings.Margin
 			if flags.Changed("margin") {
@@ -72,12 +81,30 @@ editing.`,
 			return nil
 		},
 	}
-	root.Flags().Float64P("gravity", "g", 1.0, "gravity multiplier relative to Earth (1 g)")
+	root.Flags().StringP("gravity", "g", "1", "gravity multiplier relative to Earth (1 g), or a named preset from config")
 	root.Flags().BoolP("full", "f", false, "use loaded container masses (empty mass + capacity)")
 	root.Flags().Float64P("margin", "m", 0, "target thrust-to-weight ratio (default: from config)")
 	root.Flags().String("config", "", "alternate config file")
 	root.AddCommand(newInitCmd())
 	return root
+}
+
+// resolveGravity turns the -g value into a multiplier: a number is used
+// as-is; anything else is a case-insensitive lookup in the config's
+// [gravity] presets.
+func resolveGravity(raw string, presets map[string]float64) (float64, error) {
+	if v, err := strconv.ParseFloat(raw, 64); err == nil {
+		return v, nil
+	}
+	if v, ok := presets[strings.ToLower(raw)]; ok {
+		return v, nil
+	}
+	names := make([]string, 0, len(presets))
+	for name := range presets {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return 0, fmt.Errorf("unknown gravity %q (use a number or one of: %s)", raw, strings.Join(names, ", "))
 }
 
 // Execute runs se2calc and returns any execution error (cobra has already

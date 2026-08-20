@@ -26,7 +26,7 @@ Flags:
 
 | Flag | Meaning |
 |------|---------|
-| `-g, --gravity` | gravity multiplier relative to Earth 1 g (default 1) |
+| `-g, --gravity` | gravity multiplier relative to Earth 1 g (default 1), or a named preset like `-g palatine` |
 | `-f, --full`    | count containers as loaded (empty mass + capacity) |
 | `-m, --margin`  | target thrust-to-weight ratio (default 1.5, from config) |
 | `--config`      | alternate config file |
@@ -44,7 +44,10 @@ file only needs the keys you change — everything else falls back to the
 defaults. Add containers (the table key is the CLI shortcut, and must
 start with a letter since the expression grammar reads digit-leading
 tokens as masses), tweak stats after a game patch, or uncomment the ion
-thruster block for vacuum-world hauling.
+thruster block for vacuum-world hauling. The `[gravity]` table defines
+the named `-g` presets (verdure, palatine, caligo, space ship as
+defaults; kemik/byblos are stubbed out until the wiki documents their
+gravity — fill them in from your in-game map screen).
 
 ## Game data
 

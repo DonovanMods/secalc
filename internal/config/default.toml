@@ -19,6 +19,22 @@
 [settings]
 margin = 1.5 # default target thrust-to-weight ratio (-m overrides)
 
+# --- Gravity presets ------------------------------------------------------
+# Named values for -g (e.g. `se2calc -g palatine ...`); plain numbers still
+# work. Preset names follow the same shape rule as container keys (start
+# with a letter). Values are multiples of 9.81 m/s^2.
+
+[gravity]
+verdure = 1.0    # planet; ~1 g, community-verified (see README, Game data)
+palatine = 0.33  # moon; https://spaceengineers2.wiki.gg/wiki/Palatine
+caligo = 0.416   # moon; https://spaceengineers2.wiki.gg/wiki/Caligo
+space = 0.0      # convenience: zero gravity
+
+# Starting planets whose gravity the wiki does not document yet — read the
+# value off your in-game map screen, then uncomment and fill in:
+# kemik = 0.0
+# byblos = 0.0
+
 # --- Storage containers -------------------------------------------------
 
 # https://spaceengineers2.wiki.gg/wiki/Cargo_Container_1.5_m
