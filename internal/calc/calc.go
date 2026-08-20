@@ -51,11 +51,12 @@ type Plan struct {
 // Input carries everything Build needs. Margin must already be resolved
 // (config default or -m flag).
 type Input struct {
-	Terms       []parse.Term
-	Cfg         *config.Config
-	GravityMult float64
-	Margin      float64
-	Full        bool
+	Terms        []parse.Term
+	Cfg          *config.Config
+	GravityMult  float64
+	Margin       float64
+	Full         bool
+	CargoDensity float64 // kg/L, resolved from config settings; used by volumetric containers
 }
 
 // Build computes the mass breakdown and per-size thruster requirements.
@@ -69,7 +70,7 @@ func Build(in Input) (*Plan, error) {
 
 	p := &Plan{GravityMult: in.GravityMult, Margin: in.Margin, Full: in.Full}
 	for _, t := range in.Terms {
-		item, err := massItem(t, in.Cfg, in.Full)
+		item, err := massItem(t, in.Cfg, in.Full, in.CargoDensity)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +85,7 @@ func Build(in Input) (*Plan, error) {
 	return p, nil
 }
 
-func massItem(t parse.Term, cfg *config.Config, full bool) (MassItem, error) {
+func massItem(t parse.Term, cfg *config.Config, full bool, density float64) (MassItem, error) {
 	switch t.Kind {
 	case parse.Mass:
 		return MassItem{Label: t.Raw, MassKg: float64(t.Count) * t.MassKg}, nil
@@ -96,7 +97,7 @@ func massItem(t parse.Term, cfg *config.Config, full bool) (MassItem, error) {
 		unit := c.Mass
 		label := c.Name
 		if full {
-			unit += c.Capacity
+			unit += c.FullCargoKg(density)
 			label += " (full)"
 		}
 		if t.Count > 1 {

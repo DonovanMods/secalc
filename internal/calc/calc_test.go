@@ -221,3 +221,25 @@ func TestBuildValidatesInputs(t *testing.T) {
 		t.Error("zero margin: want error")
 	}
 }
+
+func TestBuildFullVolumetricContainer(t *testing.T) {
+	cfg := testCfg(50000, 0, 0.5)
+	cfg.Settings.CargoDensity = 2.5
+	cfg.Containers["vol"] = config.Container{Name: "Vol Box", Mass: 100, CapacityL: 1000}
+
+	p, err := Build(Input{
+		Terms:        []parse.Term{{Kind: parse.Container, Count: 2, Raw: "2*vol", Key: "vol"}},
+		Cfg:          cfg,
+		GravityMult:  1,
+		Margin:       1.5,
+		Full:         true,
+		CargoDensity: cfg.Settings.CargoDensity,
+	})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	// 2 × (100 kg empty + 1000 L × 2.5 kg/L) = 5200 kg
+	if p.TotalKg != 5200 {
+		t.Errorf("TotalKg = %g, want 5200", p.TotalKg)
+	}
+}

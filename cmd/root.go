@@ -67,11 +67,12 @@ editing.`,
 			}
 
 			plan, err := calc.Build(calc.Input{
-				Terms:       terms,
-				Cfg:         cfg,
-				GravityMult: gravity,
-				Margin:      margin,
-				Full:        full,
+				Terms:        terms,
+				Cfg:          cfg,
+				GravityMult:  gravity,
+				Margin:       margin,
+				Full:         full,
+				CargoDensity: cfg.Settings.CargoDensity,
 			})
 			if err != nil {
 				return err

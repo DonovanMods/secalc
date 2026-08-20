@@ -202,3 +202,71 @@ func TestShortcutKeysSorted(t *testing.T) {
 		}
 	}
 }
+
+func TestContainerFullCargoKg(t *testing.T) {
+	tests := []struct {
+		name string
+		c    Container
+		dens float64
+		want float64
+	}{
+		{"mass-limited", Container{Capacity: 16800}, 0, 16800},
+		{"volumetric", Container{CapacityL: 1000}, 2.5, 2500},
+		{"holds nothing", Container{}, 2.5, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.FullCargoKg(tt.dens); got != tt.want {
+				t.Errorf("FullCargoKg = %g, want %g", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadValidatesVolumetricCargo(t *testing.T) {
+	tests := []struct {
+		name    string
+		toml    string
+		wantErr string
+	}{
+		{
+			"both capacities set",
+			"[containers.dual]\nname = \"Dual\"\nmass = 1\ncapacity = 5\ncapacity_l = 5\n",
+			"containers.dual",
+		},
+		{
+			"capacity_l without density",
+			"[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = 5\n",
+			"cargo_density",
+		},
+		{
+			"negative capacity_l",
+			"[settings]\ncargo_density = 2.5\n[containers.vol]\nname = \"Vol\"\nmass = 1\ncapacity_l = -1\n",
+			"containers.vol",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := isolate(t)
+			writeUserConfig(t, dir, tt.toml)
+			_, err := Load("")
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("want error containing %q, got %v", tt.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestLoadAcceptsVolumetricContainer(t *testing.T) {
+	dir := isolate(t)
+	writeUserConfig(t, dir,
+		"[settings]\ncargo_density = 2.7027\n[containers.vol]\nname = \"Vol Box\"\nmass = 100\ncapacity_l = 1000\n")
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.Containers["vol"].CapacityL != 1000 || cfg.Settings.CargoDensity != 2.7027 {
+		t.Errorf("volumetric fields not loaded: %+v, density %g",
+			cfg.Containers["vol"], cfg.Settings.CargoDensity)
+	}
+}

@@ -29,15 +29,26 @@ var DefaultTOML []byte
 
 // Settings holds calculator-wide tunables.
 type Settings struct {
-	Margin float64 `mapstructure:"margin"` // target thrust-to-weight ratio
+	Margin       float64 `mapstructure:"margin"`        // target thrust-to-weight ratio
+	CargoDensity float64 `mapstructure:"cargo_density"` // kg/L; required by volumetric containers
 }
 
 // Container is one storage block; the map key in Config.Containers is its
 // CLI shortcut.
 type Container struct {
-	Name     string  `mapstructure:"name"`
-	Mass     float64 `mapstructure:"mass"`     // kg, empty
-	Capacity float64 `mapstructure:"capacity"` // kg of cargo when full
+	Name      string  `mapstructure:"name"`
+	Mass      float64 `mapstructure:"mass"`       // kg, empty
+	Capacity  float64 `mapstructure:"capacity"`   // kg of cargo when full (mass-limited games)
+	CapacityL float64 `mapstructure:"capacity_l"` // liters of cargo when full (volumetric games)
+}
+
+// FullCargoKg is the cargo mass a full container adds: capacity kg when
+// set, otherwise capacity_l converted through the given density.
+func (c Container) FullCargoKg(density float64) float64 {
+	if c.Capacity > 0 {
+		return c.Capacity
+	}
+	return c.CapacityL * density
 }
 
 // ThrusterSize is one size variant within a thruster family.
@@ -138,6 +149,15 @@ func (c *Config) validate() error {
 		}
 		if ct.Mass < 0 || ct.Capacity < 0 {
 			return fmt.Errorf("config: containers.%s: mass and capacity must be >= 0", key)
+		}
+		if ct.Capacity > 0 && ct.CapacityL > 0 {
+			return fmt.Errorf("config: containers.%s: set exactly one of capacity (kg) or capacity_l (liters), not both", key)
+		}
+		if ct.CapacityL < 0 {
+			return fmt.Errorf("config: containers.%s: capacity_l must be >= 0", key)
+		}
+		if ct.CapacityL > 0 && c.Settings.CargoDensity <= 0 {
+			return fmt.Errorf("config: containers.%s uses capacity_l but settings.cargo_density is not set (> 0 kg/L required)", key)
 		}
 	}
 	// Gravity preset keys follow the container-key shape: a numeric-looking
