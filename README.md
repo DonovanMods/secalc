@@ -21,7 +21,9 @@ Masses accept `kg` (default) and `t`, with optional comma separators
 (`1,230kg`); `x` works as a multiplier (`2xs15m`). Storage shortcuts
 come from the selected game's config: footprint-named for SE2 (`s15m`,
 `s25m`, `s75m`), grid+size for SE1 (`sgs`/`sgm`/`sgl` small grid,
-`lgs`/`lgl` large grid).
+`lgs`/`lgl` large grid). Run `secalc shortcuts` (optionally with
+`--game se1`) to list every storage code and gravity preset your config
+defines.
 
 Flags:
 

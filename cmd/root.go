@@ -16,7 +16,7 @@ import (
 )
 
 // Version is the semantic version of secalc.
-const Version = "0.2.0"
+const Version = "0.3.0"
 
 // NewRootCmd builds a fresh root command. A new instance is built per call
 // so tests never share flag state.
@@ -31,7 +31,9 @@ from a mass expression.
 An expression is terms joined by "+": mass literals (1.23t, 1,230kg,
 bare kg) and storage shortcuts from the selected game's config (2*s15m
 for SE2, 2*lgl for SE1), matched case-insensitively. Run "secalc init"
-to write both games' default configs for editing.`,
+to write both games' default configs for editing, and
+"secalc shortcuts" to list the storage codes and gravity presets your
+config defines.`,
 		Example: `  secalc -g 0.5 1.23t + 2*s15m + s25m
   secalc --full 1t + 2*s15m
   secalc --game se1 -g moon --full 1t + 2*lgl`,
@@ -46,9 +48,7 @@ to write both games' default configs for editing.`,
 				return cmd.Help()
 			}
 			flags := cmd.Flags()
-			game, _ := flags.GetString("game")
-			configPath, _ := flags.GetString("config")
-			cfg, err := config.Load(game, configPath)
+			game, cfg, err := loadGameConfig(cmd)
 			if err != nil {
 				return err
 			}
@@ -92,7 +92,17 @@ to write both games' default configs for editing.`,
 	root.Flags().Float64P("margin", "m", 0, "target thrust-to-weight ratio (default: from config)")
 	root.Flags().String("config", "", "alternate config file")
 	root.AddCommand(newInitCmd())
+	root.AddCommand(newShortcutsCmd())
 	return root
+}
+
+// loadGameConfig resolves a command's shared --game/--config flags into
+// the loaded config stack for that game.
+func loadGameConfig(cmd *cobra.Command) (string, *config.Config, error) {
+	game, _ := cmd.Flags().GetString("game")
+	path, _ := cmd.Flags().GetString("config")
+	cfg, err := config.Load(game, path)
+	return game, cfg, err
 }
 
 // resolveGravity turns the -g value into a multiplier: a number is used

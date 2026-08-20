@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.3.0] - 2026-08-19
+
+### Added
+
+- `secalc shortcuts [--game se1|se2]` lists the storage codes and
+  gravity presets the selected config stack defines (including user
+  overrides), with names, empty masses, and capacities; the root help
+  points new users at it.
+
 ## [0.2.0] - 2026-08-19
 
 ### Added

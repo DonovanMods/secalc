@@ -16,7 +16,7 @@ func TestVersionFlag(t *testing.T) {
 	if err := root.Execute(); err != nil {
 		t.Fatalf("--version: unexpected error: %v", err)
 	}
-	want := "secalc version 0.2.0\n"
+	want := "secalc version 0.3.0\n"
 	if out.String() != want {
 		t.Errorf("output = %q, want %q", out.String(), want)
 	}
@@ -38,6 +38,7 @@ func TestNoArgsShowsHelp(t *testing.T) {
 		"secalc -g 0.5 1.23t + 2*s15m + s25m",
 		"secalc --game se1 -g moon --full 1t + 2*lgl",
 		"Available Commands:",
+		"secalc shortcuts",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("help output missing %q:\n%s", want, got)

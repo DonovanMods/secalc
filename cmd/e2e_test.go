@@ -57,6 +57,59 @@ func run(t *testing.T, args ...string) (string, error) {
 	return out.String(), err
 }
 
+func TestE2EShortcutsSE2(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	root := NewRootCmd()
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetArgs([]string{"shortcuts"})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("shortcuts: %v\n%s", err, out.String())
+	}
+	for _, want := range []string{
+		"secalc — SE2 shortcuts",
+		"s15m", "Cargo Container 1.5 m", "capacity",
+		"Gravity presets", "palatine",
+	} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("shortcuts output missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+func TestE2EShortcutsSE1(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	root := NewRootCmd()
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetArgs([]string{"shortcuts", "--game", "se1"})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("shortcuts --game se1: %v\n%s", err, out.String())
+	}
+	for _, want := range []string{
+		"secalc — SE1 shortcuts",
+		"sgs", "L capacity", "moon",
+	} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("SE1 shortcuts output missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+func TestE2EShortcutsUnknownGame(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	root := NewRootCmd()
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetArgs([]string{"shortcuts", "--game", "se3"})
+	if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "se3") {
+		t.Fatalf("want unknown-game error naming se3, got %v", err)
+	}
+}
+
 func TestE2EEmptyContainers(t *testing.T) {
 	// M = 1000 + 2*100 + 300 = 1500 kg at 0.5 g, margin 1.5:
 	// need = 1500*4.905*1.5 = 11036.25 N, denom = 50000-1000*7.3575
