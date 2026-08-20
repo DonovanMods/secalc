@@ -67,6 +67,10 @@ capacity_l = 421000
 # --- Thrusters --------------------------------------------------------------
 # Per size: thrust N, mass kg, power in the family's power_unit, at max
 # thrust. SE1 hydrogen thrusters draw no electricity — fuel only.
+# Family/size table keys are internal ids, never typed on the CLI. To
+# tweak a value, edit it under the SAME key — renaming keys in a copied
+# file duplicates blocks, because the embedded defaults still provide
+# the originals (secalc will refuse to load such a config).
 
 [thrusters.atmo_sg]
 # Produces no thrust in vacuum — ignore these rows for airless bodies (moon/europa/titan presets).

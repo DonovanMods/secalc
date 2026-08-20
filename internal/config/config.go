@@ -198,17 +198,43 @@ func (c *Config) validate() error {
 	if len(c.Thrusters) == 0 {
 		return fmt.Errorf("config: no thruster families defined")
 	}
-	for fk, fam := range c.Thrusters {
+	// Duplicate display names are almost always the copied-config rename
+	// trap: user files merge per-key OVER the embedded defaults, so a
+	// renamed key yields both the original and the copy. Iterate sorted
+	// keys so the reported pair is deterministic.
+	familyKeys := make([]string, 0, len(c.Thrusters))
+	for fk := range c.Thrusters {
+		familyKeys = append(familyKeys, fk)
+	}
+	sort.Strings(familyKeys)
+	familyByName := make(map[string]string, len(familyKeys))
+	for _, fk := range familyKeys {
+		fam := c.Thrusters[fk]
 		if fam.Name == "" || fam.PowerUnit == "" {
 			return fmt.Errorf("config: thrusters.%s: name and power_unit are required", fk)
 		}
+		if prev, dup := familyByName[fam.Name]; dup {
+			return fmt.Errorf("config: thruster families %s and %s share the name %q — if you renamed family keys in a copied config, the embedded defaults still provide the originals; keep the original keys and edit values instead", prev, fk, fam.Name)
+		}
+		familyByName[fam.Name] = fk
 		if len(fam.Sizes) == 0 {
 			return fmt.Errorf("config: thrusters.%s: at least one size is required", fk)
 		}
-		for sk, s := range fam.Sizes {
+		sizeKeys := make([]string, 0, len(fam.Sizes))
+		for sk := range fam.Sizes {
+			sizeKeys = append(sizeKeys, sk)
+		}
+		sort.Strings(sizeKeys)
+		sizeByName := make(map[string]string, len(sizeKeys))
+		for _, sk := range sizeKeys {
+			s := fam.Sizes[sk]
 			if s.Name == "" {
 				return fmt.Errorf("config: thrusters.%s.sizes.%s: name is required", fk, sk)
 			}
+			if prev, dup := sizeByName[s.Name]; dup {
+				return fmt.Errorf("config: thrusters.%s: sizes %s and %s share the name %q — if you renamed size keys in a copied config, the embedded defaults still provide the originals; edit values under the original keys instead (size keys are internal and never typed on the CLI)", fk, prev, sk, s.Name)
+			}
+			sizeByName[s.Name] = sk
 			if s.Thrust <= 0 {
 				return fmt.Errorf("config: thrusters.%s.sizes.%s: thrust must be > 0", fk, sk)
 			}

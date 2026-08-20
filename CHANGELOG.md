@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.3.1] - 2026-08-20
+
+### Fixed
+
+- Copied configs with renamed thruster family/size keys silently
+  duplicated every thruster row (user files merge per-key OVER the
+  embedded defaults, so renamed keys yielded both copies). secalc now
+  refuses to load such configs with an error naming both keys and
+  explaining the fix; the shipped configs document the rule.
+- Fractional kilograms were truncated in the mass breakdown (a typed
+  1.34 echoed as "1 kg"); sub-tonne masses now keep their decimals.
+
 ## [0.3.0] - 2026-08-19
 
 ### Added

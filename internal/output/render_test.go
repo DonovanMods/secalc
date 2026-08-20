@@ -117,3 +117,20 @@ func TestRenderPowerFloatNoise(t *testing.T) {
 		t.Errorf("power must render as 1.95 MW, got:\n%s", buf.String())
 	}
 }
+
+func TestRenderFractionalKilograms(t *testing.T) {
+	p := &calc.Plan{
+		Game:        "SE2",
+		GravityMult: 0,
+		Margin:      1.5,
+		Items:       []calc.MassItem{{Label: "1.34", MassKg: 1.34}},
+		TotalKg:     1.34,
+	}
+
+	var buf bytes.Buffer
+	Render(&buf, p)
+
+	if !strings.Contains(buf.String(), "1.34 kg") {
+		t.Errorf("fractional kilograms must not be truncated, got:\n%s", buf.String())
+	}
+}

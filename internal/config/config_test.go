@@ -128,6 +128,35 @@ func TestLoadRejectsDigitLeadingContainerKey(t *testing.T) {
 	}
 }
 
+func TestLoadRejectsDuplicateSizeNames(t *testing.T) {
+	dir := isolate(t)
+	// A copied config with a renamed size key: the embedded defaults still
+	// supply s1m ("1 m"), so ta1m duplicates the display name.
+	writeUserConfig(t, dir, "se2",
+		"[thrusters.atmospheric.sizes.ta1m]\nname = \"1 m\"\nthrust = 40000\nmass = 57.98\npower = 0.075\n")
+
+	_, err := Load("se2", "")
+	if err == nil {
+		t.Fatal("want duplicate-size-name error, got nil")
+	}
+	for _, want := range []string{"atmospheric", "1 m", "s1m", "ta1m", "renamed"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("error should mention %q: %v", want, err)
+		}
+	}
+}
+
+func TestLoadRejectsDuplicateFamilyNames(t *testing.T) {
+	dir := isolate(t)
+	writeUserConfig(t, dir, "se2",
+		"[thrusters.atmo2]\nname = \"Atmospheric\"\npower_unit = \"MW\"\n[thrusters.atmo2.sizes.x]\nname = \"X\"\nthrust = 1000\nmass = 1\npower = 0.1\n")
+
+	_, err := Load("se2", "")
+	if err == nil || !strings.Contains(err.Error(), "Atmospheric") {
+		t.Fatalf("want duplicate-family-name error naming Atmospheric, got %v", err)
+	}
+}
+
 func TestUserConfigPath(t *testing.T) {
 	dir := isolate(t)
 	got, err := UserConfigPath("se1")

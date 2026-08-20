@@ -83,11 +83,12 @@ func num(v float64) string {
 	return strings.TrimRight(s, ".")
 }
 
-// mass renders kilograms: whole kg below one tonne, tonnes with two
+// mass renders kilograms: kg with up-to-3 trimmed decimals below one
+// tonne (so a typed 1.34 echoes as 1.34 kg, not 1 kg), tonnes with two
 // decimals otherwise.
 func mass(kg float64) string {
 	if kg < 1000 {
-		return fmt.Sprintf("%.0f kg", kg)
+		return num(kg) + " kg"
 	}
 	return fmt.Sprintf("%.2f t", kg/1000)
 }

@@ -58,6 +58,10 @@ capacity = 2150400
 # --- Thrusters -----------------------------------------------------------
 # Per size: thrust N, mass kg, power in the family's power_unit (per
 # thruster, at max thrust).
+# Family/size table keys are internal ids, never typed on the CLI. To
+# tweak a value, edit it under the SAME key — renaming keys in a copied
+# file duplicates blocks, because the embedded defaults still provide
+# the originals (secalc will refuse to load such a config).
 
 [thrusters.atmospheric]
 name = "Atmospheric"
