@@ -17,7 +17,7 @@ var separator = strings.Repeat("─", 42)
 
 // Render writes the report for p to w.
 func Render(w io.Writer, p *calc.Plan) {
-	fmt.Fprintln(w, "SE2 Calculator")
+	fmt.Fprintf(w, "secalc — %s\n", p.Game)
 	fmt.Fprintln(w, separator)
 	fmt.Fprintf(w, "Gravity: %s g   Target TWR: %s\n\n", num(p.GravityMult), num(p.Margin))
 

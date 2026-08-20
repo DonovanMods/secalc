@@ -40,6 +40,7 @@ type FamilyResult struct {
 
 // Plan is the full calculation result, ready to render.
 type Plan struct {
+	Game        string // uppercase display id, e.g. "SE2"
 	GravityMult float64
 	Margin      float64
 	Full        bool
@@ -51,6 +52,7 @@ type Plan struct {
 // Input carries everything Build needs. Margin must already be resolved
 // (config default or -m flag).
 type Input struct {
+	Game         string // uppercase display id, e.g. "SE2"; passthrough to Plan
 	Terms        []parse.Term
 	Cfg          *config.Config
 	GravityMult  float64
@@ -68,7 +70,7 @@ func Build(in Input) (*Plan, error) {
 		return nil, fmt.Errorf("margin must be > 0 (got %g)", in.Margin)
 	}
 
-	p := &Plan{GravityMult: in.GravityMult, Margin: in.Margin, Full: in.Full}
+	p := &Plan{Game: in.Game, GravityMult: in.GravityMult, Margin: in.Margin, Full: in.Full}
 	for _, t := range in.Terms {
 		item, err := massItem(t, in.Cfg, in.Full, in.CargoDensity)
 		if err != nil {

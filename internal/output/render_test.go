@@ -10,6 +10,7 @@ import (
 
 func TestRenderFullReport(t *testing.T) {
 	p := &calc.Plan{
+		Game:        "SE2",
 		GravityMult: 1,
 		Margin:      1.5,
 		Items: []calc.MassItem{
@@ -32,7 +33,7 @@ func TestRenderFullReport(t *testing.T) {
 	// right-aligned in 9. Spelled out via Repeat so the padding is
 	// explicit: 11 pad + 2 gap + 3 right-align = 16 spaces after "1t".
 	want := strings.Join([]string{
-		"SE2 Calculator",
+		"secalc — SE2",
 		strings.Repeat("─", 42),
 		"Gravity: 1 g   Target TWR: 1.5",
 		"",
@@ -59,6 +60,7 @@ func TestRenderFullReport(t *testing.T) {
 
 func TestRenderZeroGravity(t *testing.T) {
 	p := &calc.Plan{
+		Game:        "SE2",
 		GravityMult: 0,
 		Margin:      1.5,
 		Items:       []calc.MassItem{{Label: "500", MassKg: 500}},
@@ -78,6 +80,7 @@ func TestRenderZeroGravity(t *testing.T) {
 
 func TestRenderFullSuffix(t *testing.T) {
 	p := &calc.Plan{
+		Game:        "SE2",
 		GravityMult: 1,
 		Margin:      1.5,
 		Full:        true,
@@ -95,6 +98,7 @@ func TestRenderFullSuffix(t *testing.T) {
 
 func TestRenderPowerFloatNoise(t *testing.T) {
 	p := &calc.Plan{
+		Game:        "SE2",
 		GravityMult: 1,
 		Margin:      1.5,
 		Items:       []calc.MassItem{{Label: "1t", MassKg: 1000}},

@@ -177,6 +177,54 @@ func TestE2EUnknownShortcut(t *testing.T) {
 	}
 }
 
+func TestE2EGameHeader(t *testing.T) {
+	out, err := run(t, "1t")
+	if err != nil {
+		t.Fatalf("run: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "secalc — SE2") {
+		t.Errorf("want SE2 header:\n%s", out)
+	}
+}
+
+func TestE2ESE1FullVolumetric(t *testing.T) {
+	// Real SE1 defaults, no --config: moon (0.25 g), margin 1.5,
+	// one full small-grid Small Cargo Container + 1 t hull.
+	// M = 1000 + 49.2 + 125 L × 2.7027 kg/L = 1387.0375 kg → 1.39 t.
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	root := NewRootCmd()
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetArgs([]string{"--game", "se1", "--full", "-g", "moon", "1t", "+", "SGS"})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("se1 run: %v\n%s", err, out.String())
+	}
+	for _, want := range []string{
+		"secalc — SE1",
+		"Gravity: 0.25 g",
+		"Small Cargo Container (small grid) (full)",
+		"Total ship mass: 1.39 t (full)",
+		"Atmospheric (small grid)",
+		"Hydrogen (large grid)",
+		"L/s H2",
+	} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("SE1 output missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+func TestE2EUnknownGame(t *testing.T) {
+	out, err := run(t, "--game", "se3", "1t")
+	if err == nil {
+		t.Fatalf("want error for unknown game, got:\n%s", out)
+	}
+	if !strings.Contains(err.Error(), "se3") || !strings.Contains(err.Error(), "se1") {
+		t.Errorf("error should name se3 and list valid ids: %q", err)
+	}
+}
+
 func TestE2EDefaultConfigSmoke(t *testing.T) {
 	// No --config: embedded SE2 defaults must load and produce a report.
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())

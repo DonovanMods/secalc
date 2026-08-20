@@ -36,6 +36,7 @@ func TestNoArgsShowsHelp(t *testing.T) {
 	for _, want := range []string{
 		"secalc [flags] <expression>...",
 		"secalc -g 0.5 1.23t + 2*s15m + s25m",
+		"secalc --game se1 -g moon --full 1t + 2*lgl",
 		"Available Commands:",
 	} {
 		if !strings.Contains(got, want) {

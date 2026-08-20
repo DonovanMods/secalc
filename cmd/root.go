@@ -32,7 +32,8 @@ bare kg) and storage shortcuts from the config (2*s15m, s25m), matched
 case-insensitively. Run "secalc init" to write the default config for
 editing.`,
 		Example: `  secalc -g 0.5 1.23t + 2*s15m + s25m
-  secalc --full 1t + 2*s15m`,
+  secalc --full 1t + 2*s15m
+  secalc --game se1 -g moon --full 1t + 2*lgl`,
 		Version: Version,
 		// ArbitraryArgs, not unset: with a subcommand present, cobra's
 		// default arg validator would reject "secalc 1t" as an unknown
@@ -44,8 +45,9 @@ editing.`,
 				return cmd.Help()
 			}
 			flags := cmd.Flags()
+			game, _ := flags.GetString("game")
 			configPath, _ := flags.GetString("config")
-			cfg, err := config.Load("se2", configPath)
+			cfg, err := config.Load(game, configPath)
 			if err != nil {
 				return err
 			}
@@ -67,6 +69,7 @@ editing.`,
 			}
 
 			plan, err := calc.Build(calc.Input{
+				Game:         strings.ToUpper(game),
 				Terms:        terms,
 				Cfg:          cfg,
 				GravityMult:  gravity,
@@ -82,6 +85,7 @@ editing.`,
 			return nil
 		},
 	}
+	root.Flags().String("game", "se2", "which game's config stack to use: se2 | se1")
 	root.Flags().StringP("gravity", "g", "1", "gravity multiplier relative to Earth (1 g), or a named preset from config")
 	root.Flags().BoolP("full", "f", false, "use loaded container masses (empty mass + capacity)")
 	root.Flags().Float64P("margin", "m", 0, "target thrust-to-weight ratio (default: from config)")
