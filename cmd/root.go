@@ -30,8 +30,9 @@ from a mass expression.
 
 An expression is terms joined by "+": mass literals (1.23t, 1,230kg,
 bare kg) and storage shortcuts from the selected game's config (2*s15m
-for SE2, 2*lgl for SE1), matched case-insensitively. Run "secalc init"
-to write both games' default configs for editing, and
+for SE2, 2*lgl for SE1), matched case-insensitively. 
+
+Run "secalc init" to write both games' default configs for editing, and
 "secalc shortcuts" to list the storage codes and gravity presets your
 config defines.`,
 		Example: `  secalc -g 0.5 1.23t + 2*s15m + s25m
