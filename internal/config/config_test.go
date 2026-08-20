@@ -217,6 +217,7 @@ func TestLoadDefaultGravityPresets(t *testing.T) {
 		"verdure":  1.0,
 		"palatine": 0.33,
 		"caligo":   0.416,
+		"kemik":    1.0,
 		"space":    0,
 	}
 	for name, mult := range want {

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Added
+
+- `kemik = 1.0` gravity preset in the SE2 defaults (user-verified
+  in-game; the wiki still does not document it). Byblos remains stubbed.
+
 ## [0.4.0] - 2026-08-20
 
 ### Changed

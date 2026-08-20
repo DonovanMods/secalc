@@ -34,7 +34,7 @@ space = 0.0      # convenience: zero gravity
 
 # Starting planets whose gravity the wiki does not document yet — read the
 # value off your in-game map screen, then uncomment and fill in:
-# kemik = 0.0
+kemik = 1.0      # planet; user-verified in-game 2026-08-20 (early access — may change)
 # byblos = 0.0
 
 # --- Storage containers -------------------------------------------------
