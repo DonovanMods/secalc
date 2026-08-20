@@ -69,6 +69,7 @@ capacity_l = 421000
 # thrust. SE1 hydrogen thrusters draw no electricity — fuel only.
 
 [thrusters.atmo_sg]
+# Produces no thrust in vacuum — ignore these rows for airless bodies (moon/europa/titan presets).
 name = "Atmospheric (small grid)"
 power_unit = "MW"
 
@@ -87,6 +88,7 @@ mass = 2948
 power = 2.4
 
 [thrusters.atmo_lg]
+# Produces no thrust in vacuum — ignore these rows for airless bodies (moon/europa/titan presets).
 name = "Atmospheric (large grid)"
 power_unit = "MW"
 
@@ -141,6 +143,7 @@ mass = 6940
 power = 4820.05
 
 [thrusters.ion_sg]
+# Reduced thrust in atmosphere (full in vacuum); rows assume full effectiveness.
 name = "Ion (small grid)"
 power_unit = "MW"
 
@@ -159,6 +162,7 @@ mass = 721
 power = 2.4
 
 [thrusters.ion_lg]
+# Reduced thrust in atmosphere (full in vacuum); rows assume full effectiveness.
 name = "Ion (large grid)"
 power_unit = "MW"
 

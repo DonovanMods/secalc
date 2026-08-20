@@ -35,7 +35,7 @@ Flags:
 
 Each output line is an independent solution: "Atmospheric (large grid)
 Small: 3" means three of those thrusters alone would lift the ship
-(with your margin), accounting for the thrusters' own mass.
+(with your margin), accounting for the thrusters' own mass. Thrust is treated as fully effective everywhere: SE1 atmospheric rows mean nothing on airless bodies, and SE1 ion thrusters actually run reduced in atmosphere — pick the rows that match your environment.
 
 ## Configuration
 

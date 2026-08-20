@@ -1,5 +1,5 @@
-// secalc calculates Space Engineers 2 thruster requirements from a ship
-// mass expression.
+// secalc calculates Space Engineers thruster requirements from a ship
+// mass expression for SE2 and SE1.
 package main
 
 import (

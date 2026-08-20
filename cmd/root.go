@@ -23,14 +23,15 @@ const Version = "0.2.0"
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "secalc [flags] <expression>...",
-		Short: "Space Engineers 2 thruster and mass calculator",
-		Long: `secalc reports how many thrusters of each type lift a Space Engineers 2
-ship, and what they consume, from a mass expression.
+		Short: "Space Engineers thruster and mass calculator (SE2 and SE1)",
+		Long: `secalc reports how many thrusters of each type lift a Space Engineers
+ship — SE2 by default, SE1 with --game se1 — and what they consume,
+from a mass expression.
 
 An expression is terms joined by "+": mass literals (1.23t, 1,230kg,
-bare kg) and storage shortcuts from the config (2*s15m, s25m), matched
-case-insensitively. Run "secalc init" to write the default config for
-editing.`,
+bare kg) and storage shortcuts from the selected game's config (2*s15m
+for SE2, 2*lgl for SE1), matched case-insensitively. Run "secalc init"
+to write both games' default configs for editing.`,
 		Example: `  secalc -g 0.5 1.23t + 2*s15m + s25m
   secalc --full 1t + 2*s15m
   secalc --game se1 -g moon --full 1t + 2*lgl`,
@@ -87,7 +88,7 @@ editing.`,
 	}
 	root.Flags().String("game", "se2", "which game's config stack to use: se2 | se1")
 	root.Flags().StringP("gravity", "g", "1", "gravity multiplier relative to Earth (1 g), or a named preset from config")
-	root.Flags().BoolP("full", "f", false, "use loaded container masses (empty mass + capacity)")
+	root.Flags().BoolP("full", "f", false, "use loaded container masses")
 	root.Flags().Float64P("margin", "m", 0, "target thrust-to-weight ratio (default: from config)")
 	root.Flags().String("config", "", "alternate config file")
 	root.AddCommand(newInitCmd())
